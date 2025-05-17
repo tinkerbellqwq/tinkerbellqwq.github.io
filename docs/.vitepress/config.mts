@@ -54,6 +54,12 @@ export default defineConfig({
           { text: '我读的', link: '/paper/my' },
         ]
       },
+      {
+        text: '一些有趣的项目',
+        items: [
+          { text: '代码自动评审组件', link: '/projects/code-review/summary' },
+        ]
+      }
     ],
 
     socialLinks: [
