@@ -5,7 +5,7 @@ export default defineConfig({
   title: "个人博客",
   description: "欢迎",
   markdown:{
-
+    math: true
   },
   lastUpdated: true, //首次配置不会立即生效，需git提交后爬取时间戳 //
   themeConfig: {
