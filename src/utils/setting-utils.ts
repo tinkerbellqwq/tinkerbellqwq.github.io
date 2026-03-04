@@ -9,6 +9,9 @@ import type { LIGHT_DARK_MODE } from "@/types/config";
 
 export function getDefaultHue(): number {
 	const fallback = "250";
+	if (typeof document === "undefined") {
+		return Number.parseInt(fallback, 10);
+	}
 	const configCarrier = document.getElementById("config-carrier");
 	return Number.parseInt(configCarrier?.dataset.hue || fallback, 10);
 }
@@ -25,6 +28,9 @@ export function setHue(hue: number): void {
 	if (typeof localStorage !== "undefined") {
 		localStorage.setItem("hue", String(hue));
 	}
+	if (typeof document === "undefined") {
+		return;
+	}
 	const r = document.querySelector(":root") as HTMLElement;
 	if (!r) {
 		return;
@@ -33,6 +39,9 @@ export function setHue(hue: number): void {
 }
 
 export function applyThemeToDocument(theme: LIGHT_DARK_MODE) {
+	if (typeof document === "undefined" || typeof window === "undefined") {
+		return;
+	}
 	switch (theme) {
 		case LIGHT_MODE:
 			document.documentElement.classList.remove("dark");
