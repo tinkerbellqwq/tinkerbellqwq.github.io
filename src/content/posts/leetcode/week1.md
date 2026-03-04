@@ -126,11 +126,11 @@ class Solution {
 class Solution {
     public int maxArea(int[] height) {
         int ans = 0;
-        int l = 0, r = height.length - 1;
+        int l = 0, r = height.length - 1; // 一开始是最大的长
         while (l < r) {
-            int area = (r - l) * Math.min(height[l], height[r]);
+            int area = (r - l) * Math.min(height[l], height[r]); // 计算局部答案
             ans = Math.max(ans, area);
-            if (height[l] < height[r]) {
+            if (height[l] < height[r]) { // 短的不要
                 l ++;
             } else {
                 r --;
@@ -143,6 +143,41 @@ class Solution {
 
 ### 15. 三数之和 <span class="difficulty-medium">中等</span> [15](https://leetcode.cn/problems/3sum/)
 - **描述**：给你一个整数数组 `nums`，判断是否存在三元组 `[nums[i], nums[j], nums[k]]` 满足 `i != j`、`i != k` 且 `j != k`，同时还满足 `nums[i] + nums[j] + nums[k] == 0`。
+
+- **解题思路**: 转换一下题目，求`-nums[i] = nums[j] + nums[k]`，可以枚举`nums[i]`，然后怎么满足呢？可以把原序列排个序，双指针找即可。
+
+代码：
+```java
+class Solution {
+    public List<List<Integer>> threeSum(int[] nums) {
+        Arrays.sort(nums); // 先排序
+        List<List<Integer>> ans = new ArrayList<>();
+        int n = nums.length;
+        for (int i = 0; i < n - 2; i ++) { // 枚举nums[i]
+            int x = nums[i];
+            if (i > 0 && x == nums[i - 1]) continue; // 优化1： 上一个是一样的在上一轮算过了。
+            if (x + nums[i + 1] + nums[i + 2] > 0) break; // 优化2： 最小的都大于0了，因为排过序了后面的肯定都大于零了。
+            if (x + nums[n - 2] + nums[n - 1] < 0) continue; // 优化3：加两个最大的都小于0，直接跳过。
+            int j = i + 1;
+            int k = n - 1;
+            while (j < k) {
+                int s = x + nums[j] + nums[k];
+                if (s > 0) {
+                    k --;
+                } else if (s < 0) {
+                    j ++;
+                } else {
+                    ans.add(List.of(x, nums[j], nums[k]));
+                    for (j ++; j < k && nums[j] == nums[j - 1]; j ++); // 去重
+                    for (k --; k > j && nums[k] == nums[k + 1]; k --); // 去重
+                }
+            }
+        }
+        return ans;
+    }
+}
+```
+
 
 ### 42. 接雨水 <span class="difficulty-hard">困难</span> [42](https://leetcode.cn/problems/trapping-rain-water/)
 - **描述**：给定 `n` 个非负整数表示每个宽度为 `1` 的柱子的高度图，计算按此排列的柱子，下雨之后能接多少雨水。
