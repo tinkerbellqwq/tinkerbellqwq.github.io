@@ -1,0 +1,69 @@
+[33mcommit 64bb7d7c2ca106530f272aae5c7360b9e82a0430[m[33m ([m[1;36mHEAD -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+Author: tinker <1539214893@qq.com>
+Date:   Tue Jul 8 21:47:07 2025 +0800
+
+    feat: add markdown-it and markdown-it-mathjax3 as dev dependencies
+    
+    - Updated package-lock.json to include markdown-it (v14.1.0) and markdown-it-mathjax3 (v4.3.2).
+    - Updated package.json to include markdown-it and markdown-it-mathjax3 in devDependencies.
+
+[33mcommit fdd051d522890db4f8a8f5857516711480ab9f75[m
+Author: tinker <1539214893@qq.com>
+Date:   Mon Jul 7 19:26:24 2025 +0800
+
+    feat: 更新指标说明。新读了两篇论文
+
+[33mcommit 53142780a629ef46e8332908a10eaf26e4e2bf86[m
+Author: tinker <1539214893@qq.com>
+Date:   Sun Jun 29 14:32:26 2025 +0800
+
+    feat: 更新插件列表，添加新插件并优化展示格式
+
+[33mcommit 95708e6ea12d5dbf6c27aa4d80466b5bcc4291f5[m
+Author: tinker <1539214893@qq.com>
+Date:   Fri Jun 20 11:44:04 2025 +0800
+
+    :sparkles: feat: 添加自己读医学报告生成文档及相关内容
+
+[33mcommit f66ce76912b577f7ed34c0c2081480c716db7c9a[m
+Merge: 586d5ba e9a74a0
+Author: tinker <1539214893@qq.com>
+Date:   Sat May 17 13:16:51 2025 +0800
+
+    Merge branch 'main' of github.com:tinkerbellqwq/tinkerbellqwq.github.io
+
+[33mcommit 586d5ba41c54906d5090232007529440e76a58cc[m
+Author: tinker <1539214893@qq.com>
+Date:   Sat May 17 13:15:50 2025 +0800
+
+    feat: 新增了一个中间件博客
+
+[33mcommit e9a74a079a7c61c6743f6ef19fdae5dcae032f0c[m
+Author: tinker <100742327+tinkerbellqwq@users.noreply.github.com>
+Date:   Sat May 10 13:47:26 2025 +0800
+
+    :rocket: Create deploy.yml
+
+[33mcommit 927aa86aac0350f4deccd302ecf4036a31110665[m
+Author: tinker <1539214893@qq.com>
+Date:   Sat May 10 13:45:52 2025 +0800
+
+    :art: 初始博客
+
+[33mcommit 47c052237e53df09b9440f8db990f5c7decad80d[m
+Author: tinker <100742327+tinkerbellqwq@users.noreply.github.com>
+Date:   Wed May 7 09:48:53 2025 +0800
+
+    Delete CNAME
+
+[33mcommit 46cea0a9f54653aae99d0cc4157804da4346c4a4[m
+Author: tinker <100742327+tinkerbellqwq@users.noreply.github.com>
+Date:   Sat May 3 22:41:22 2025 +0800
+
+    Added CNAME file for custom domain (veyu.me)
+
+[33mcommit 24d9b4253d0046a913cede59b0dd681de88153a6[m
+Author: tinker <100742327+tinkerbellqwq@users.noreply.github.com>
+Date:   Sat May 3 22:41:21 2025 +0800
+
+    Initial commit

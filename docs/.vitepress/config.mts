@@ -7,6 +7,13 @@ export default defineConfig({
   markdown:{
     math: true
   },
+  vue: {
+    template: {
+      compilerOptions: {
+        isCustomElement: (tag) => false
+      }
+    }
+  },
   lastUpdated: true, //首次配置不会立即生效，需git提交后爬取时间戳 //
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
@@ -32,6 +39,7 @@ export default defineConfig({
     },
     nav: [
       { text: '首页', link: '/' },
+      { text: '力扣 Hot 100', link: '/leetcode/hot100' },
     ],
 
     sidebar: [
@@ -58,6 +66,22 @@ export default defineConfig({
         text: '一些有趣的项目',
         items: [
           { text: '代码自动评审组件', link: '/projects/code-review/summary' },
+        ]
+      },
+      {
+        text: '力扣刷题记录',
+        items: [
+          { text: '🎯 总览', link: '/leetcode/hot100' },
+          {
+            text: '📅 每周计划',
+            collapsed: false,
+            items: [
+              { text: '第1周：基础篇', link: '/leetcode/week1' },
+              { text: '第2周：树与递归', link: '/leetcode/week2' },
+              { text: '第3周：进阶算法', link: '/leetcode/week3' },
+              { text: '第4周：冲刺篇', link: '/leetcode/week4' },
+            ]
+          }
         ]
       }
     ],
