@@ -97,6 +97,25 @@ class Solution {
 ### 283. 移动零 <span class="difficulty-easy">简单</span> [283](https://leetcode.cn/problems/move-zeroes/)
 - **描述**：给定一个数组 `nums`，编写一个函数将所有 `0` 移动到数组的末尾，同时保持非零元素的相对顺序。
 
+- **解题思路**：题目要求：`请注意 ，必须在不复制数组的情况下原地对数组进行操作。`。所以我们只能做一些原地的操作，例如交换数组中两个数。遍历序列，用$j = 0$表示最左边非零序列的位置，遍历到非零数直接和`num[ij]`交换，然后$j ++$
+
+代码：
+```java
+class Solution {
+    public void moveZeroes(int[] nums) {
+        int j = 0; // 最左边放非零的位置
+        for (int i = 0; i < nums.length; i ++) {
+            if (nums[i] != 0) { // 满足放过去。
+                int tmp = nums[i];
+                nums[i] = nums[j];
+                nums[j] = tmp;
+                j ++; // 向右移动一位
+            }
+        }
+    }
+}
+``
+
 ### 11. 盛水容器 <span class="difficulty-medium">中等</span> [11](https://leetcode.cn/problems/container-with-most-water/)
 - **描述**：给定一个长度为 `n` 的整数数组 `height`。有 `n` 条垂线，第 `i` 条线的两个端点是 `(i, 0)` 和 `(i, height[i])`。找出其中的两条线，使得它们与 `x` 轴共同构成的容器可以容纳最多的水。
 
