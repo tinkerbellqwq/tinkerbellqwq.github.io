@@ -17,6 +17,25 @@ draft: false
 ### 1. 两数之和 <span class="difficulty-easy">简单</span> [1](https://leetcode.cn/problems/two-sum/)
 - **描述**：给定一个整数数组 `nums` 和一个整数目标值 `target`，请你在该数组中找出和为目标值 `target` 的那两个整数，并返回它们的数组下标。
 
+- **思路**：用一个哈希表记录出现过的数。遍历序列，每次找一下 `target - nums[i]` 是否出现过即可。
+
+参考代码：
+
+```java
+class Solution {
+    public int[] twoSum(int[] nums, int target) {
+        Map<Integer, Integer> mp = new HashMap<Integer, Integer>(); // 定义哈希表
+        for (int i = 0; i < nums.length; i ++) { // 遍历序列
+            if (mp.containsKey(target - nums[i])) { // 查看是否存在
+                return new int[]{mp.get(target - nums[i]), i}; // 返回答案
+            }
+            mp.put(nums[i], i); // 记录出现过的数
+        }
+        return new int[0]; // 无解
+    }
+}
+```
+
 ### 49. 字母异位词分组 <span class="difficulty-medium">中等</span> [49](https://leetcode.cn/problems/group-anagrams/)
 - **描述**：给你一个字符串数组，请你将字母异位词组合在一起。可以按任意顺序返回结果列表。
 
