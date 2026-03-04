@@ -1,9 +1,19 @@
-# About
-This is the demo site for [Fuwari](https://github.com/saicaca/fuwari).
+# 关于我
 
-::github{repo="saicaca/fuwari"}
+---
 
-> ### Sources of images used in this site
-> - [Unsplash](https://unsplash.com/)
-> - [星と少女](https://www.pixiv.net/artworks/108916539) by [Stella](https://www.pixiv.net/users/93273965)
-> - [Rabbit - v1.4 Showcase](https://civitai.com/posts/586908) by [Rabbit_YourMajesty](https://civitai.com/user/Rabbit_YourMajesty)
+## 你好！
+
+我是 tinker，一个热爱技术的开发者。
+
+欢迎来到我的博客，这里记录了我的学习笔记、项目经验和一些思考。
+
+### 联系方式
+
+- GitHub: [tinkerbellqwq](https://github.com/tinkerbellqwq)
+- QQ: 1539214893
+- 邮箱: [1539214893@qq.com](mailto:1539214893@qq.com)
+
+---
+
+欢迎交流！
