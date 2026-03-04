@@ -182,6 +182,32 @@ class Solution {
 ### 42. 接雨水 <span class="difficulty-hard">困难</span> [42](https://leetcode.cn/problems/trapping-rain-water/)
 - **描述**：给定 `n` 个非负整数表示每个宽度为 `1` 的柱子的高度图，计算按此排列的柱子，下雨之后能接多少雨水。
 
+- **思路**：此题解法很多，先给一个双指针。考虑当前$i$的能接多少，根据水往低处流的道理，我们比较一下最左边和最右边的最大值，取最小的然后相减就是答案。操作之前要先更新左右两边的最大值。
+
+代码：
+```java
+class Solution {
+    public int trap(int[] height) {
+        int ans = 0;
+        int l = 0, r = height.length - 1; // 双指针
+        int leftMax = 0, rightMax = 0; // 记录左右两侧的最大值
+        while (l < r) { 
+          // 先更新最大值
+            leftMax = Math.max(leftMax, height[l]);
+            rightMax = Math.max(rightMax, height[r]);
+            if (leftMax < rightMax) { // 然后看水往哪边流
+                ans += leftMax - height[l];
+                l ++;
+            } else {
+                ans += rightMax - height[r];
+                r --;
+            }
+        }
+        return ans;
+    }
+}
+```
+
 ---
 
 ## Day 3: 滑动窗口
