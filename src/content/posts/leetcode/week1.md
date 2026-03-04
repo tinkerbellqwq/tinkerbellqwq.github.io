@@ -39,6 +39,28 @@ class Solution {
 ### 49. 字母异位词分组 <span class="difficulty-medium">中等</span> [49](https://leetcode.cn/problems/group-anagrams/)
 - **描述**：给你一个字符串数组，请你将字母异位词组合在一起。可以按任意顺序返回结果列表。
 
+- **思路**：用哈希表分组，把排序后的字符串当作key，排序前加到key的Array中
+
+代码：
+
+```java
+class Solution {
+    public List<List<String>> groupAnagrams(String[] strs) {
+        Map<String, List<String>> m = new HashMap<>(); // 声明一个哈希表
+        for (String s : strs) { 
+            char[] sortedS = s.toCharArray();
+            Arrays.sort(sortedS); // 先排序
+            /**
+            排序后相同的字符串分到同一组
+            computeIfAbsent：如果 key 不在哈希表中，则插入一个新的 ArrayList
+            **/
+            m.computeIfAbsent(new String(sortedS), _ -> new ArrayList<>()).add(s); 
+        }
+        return new ArrayList<List<String>>(m.values()); // 返回哈希表的值（values)
+    }
+}
+```
+
 ### 128. 最长连续序列 <span class="difficulty-medium">中等</span> [128](https://leetcode.cn/problems/longest-consecutive-sequence/)
 - **描述**：给定一个未排序的整数数组 `nums`，找出数字连续的最长序列（不要求序列元素在原数组中连续）的长度。
 
