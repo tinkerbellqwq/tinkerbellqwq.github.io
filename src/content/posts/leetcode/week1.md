@@ -119,6 +119,28 @@ class Solution {
 ### 11. 盛水容器 <span class="difficulty-medium">中等</span> [11](https://leetcode.cn/problems/container-with-most-water/)
 - **描述**：给定一个长度为 `n` 的整数数组 `height`。有 `n` 条垂线，第 `i` 条线的两个端点是 `(i, 0)` 和 `(i, height[i])`。找出其中的两条线，使得它们与 `x` 轴共同构成的容器可以容纳最多的水。
 
+- **思路**：长是越长越好，所以一开始一定是`height.length`，即$l=0$和$r=height.length-1$，然后高就是两个的最小值了。减少了长，那肯定要增加高，所以要移动较矮（小）的一方。双指针枚举答案即可。
+
+代码：
+```java
+class Solution {
+    public int maxArea(int[] height) {
+        int ans = 0;
+        int l = 0, r = height.length - 1;
+        while (l < r) {
+            int area = (r - l) * Math.min(height[l], height[r]);
+            ans = Math.max(ans, area);
+            if (height[l] < height[r]) {
+                l ++;
+            } else {
+                r --;
+            }
+        }
+        return ans;
+    }
+}
+```
+
 ### 15. 三数之和 <span class="difficulty-medium">中等</span> [15](https://leetcode.cn/problems/3sum/)
 - **描述**：给你一个整数数组 `nums`，判断是否存在三元组 `[nums[i], nums[j], nums[k]]` 满足 `i != j`、`i != k` 且 `j != k`，同时还满足 `nums[i] + nums[j] + nums[k] == 0`。
 
