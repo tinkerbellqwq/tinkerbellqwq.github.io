@@ -39,7 +39,7 @@ class Solution {
 ### 49. 字母异位词分组 <span class="difficulty-medium">中等</span> [49](https://leetcode.cn/problems/group-anagrams/)
 - **描述**：给你一个字符串数组，请你将字母异位词组合在一起。可以按任意顺序返回结果列表。
 
-- **思路**：用哈希表分组，把排序后的字符串当作key，排序前加到key的Array中
+- **思路**：用哈希表分组，把排序后的字符串当作$key$，排序前加到$key$的$Array$中
 
 代码：
 
@@ -63,6 +63,32 @@ class Solution {
 
 ### 128. 最长连续序列 <span class="difficulty-medium">中等</span> [128](https://leetcode.cn/problems/longest-consecutive-sequence/)
 - **描述**：给定一个未排序的整数数组 `nums`，找出数字连续的最长序列（不要求序列元素在原数组中连续）的长度。
+
+- **思路**: 先把所有的数放到$Set$中，然后我们遍历这个$Set$集合（不能遍历原数组），如果存在[1, 1, ..., 4, 5, ...] 一半的1，那就会退化到$O(n^2)$，所以一定是遍历$Set$集合。然后我们每次以当前数为起点去找最长，这个时候有一个关键的点就是，我们要从$x$去找$x+1，x+2，...$ 这很简单，关键是理解如果$x-1$存在，那么这个肯定不能当起点，因为$x - 1, x, x + 1 ...$ 一定会比当前的长的！
+
+代码：
+```java
+class Solution {
+    public int longestConsecutive(int[] nums) {
+        Set<Integer> st = new HashSet<>(); // 定义Set
+        for (int x : nums) { // 把所有数都放进去
+            st.add(x);
+        }
+        int ans = 0;
+        for (int x : st) { // 遍历Set集合（！！！）
+            if (st.contains(x - 1)) { // 如果存在 x - 1 直接跳过
+                continue;
+            }
+            int y = x + 1;
+            while (st.contains(y)) { // 找答案
+                y ++;
+            }
+            ans = Math.max(ans, y - x); // 取最优
+        }
+        return ans;
+    }
+}
+```
 
 ---
 
