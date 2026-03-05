@@ -267,7 +267,25 @@ class Solution {
 
 ### 560. 和为 K 的子数组 <span class="difficulty-medium">中等</span> [560](https://leetcode.cn/problems/subarray-sum-equals-k/)
 - **描述**：给你一个整数数组 `nums` 和一个整数 `k`，请你统计并返回该数组中和为 `k` 的连续子数组的个数。
+- **解题思路**: 前缀和。先做一个前缀和操作：`preSum`，这样`preSum[j] - preSum[i - 1]`即对应了`[i, j]`的和。这样我们用哈希表记录即可。就像两数之和一样。
 
+代码：
+```java
+class Solution {
+    public int subarraySum(int[] nums, int k) {
+        Map<Integer, Integer> cnt = new HashMap<>(nums.length + 1, 1); // 声明一个哈希表，大小为nums.length+1，1是缩放因子。只有满了才扩容。普通是0.75
+        cnt.put(0, 1); // preSum[0] = 0;
+        int s = 0;
+        int ans = 0;
+        for (int x : nums) {
+            s += x;
+            ans += cnt.getOrDefault(s - k, 0); // 找一下前面有没有s - k的个数
+            cnt.merge(s, 1, Integer::sum); // 这里是把s的键要更新，如果存在就旧值+1，第一个参数是要更新的键，1是键不存在的默认值，Integer::sum合并函数（如果键存在，用这个函数合并旧值和新值）
+        }
+        return ans;
+    }
+}
+```
 ---
 
 ## Day 4: 链表基础
