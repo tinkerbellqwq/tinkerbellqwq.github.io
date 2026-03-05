@@ -215,6 +215,30 @@ class Solution {
 ### 3. 无重复字符的最长子串 <span class="difficulty-medium">中等</span> [3](https://leetcode.cn/problems/longest-substring-without-repeating-characters/)
 - **描述**：给定一个字符串 `s`，请你找出其中不含有重复字符的最长子串的长度。
 
+- **解题思路**：维护一个滑动窗口，保证窗口内是符合条件的子串。记$left=0$，然后遍历整个字符串，查看当前窗口内是否符合条件，不符合说明当前字符与前面存在重复了，移动$left$。
+
+代码：
+```java
+class Solution {
+    public int lengthOfLongestSubstring(String S) {
+        char[] s = S.toCharArray();
+        int n = s.length;
+        int ans = 0, left = 0;
+        int[] cnt = new int[128];
+        for (int r = 0; r < n; r ++) { // 遍历字符串
+            char c = s[r];
+            cnt[c] ++; // 记录当前状态
+            while (cnt[c] > 1) { // 查看是否有重复的
+                cnt[s[left]] --; // 移动left
+                left ++;
+            }
+            ans = Math.max(ans, r - left + 1); // 更新答案
+        }
+        return ans;
+    }
+}
+```
+
 ### 438. 找到字符串中所有字母异位词 <span class="difficulty-medium">中等</span> [438](https://leetcode.cn/problems/find-all-anagrams-in-a-string/)
 - **描述**：给定两个字符串 `s` 和 `p`，找到 `s` 中所有 `p` 的异位词的子串，返回这些子串的起始索引。
 
