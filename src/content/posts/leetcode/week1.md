@@ -241,6 +241,29 @@ class Solution {
 
 ### 438. 找到字符串中所有字母异位词 <span class="difficulty-medium">中等</span> [438](https://leetcode.cn/problems/find-all-anagrams-in-a-string/)
 - **描述**：给定两个字符串 `s` 和 `p`，找到 `s` 中所有 `p` 的异位词的子串，返回这些子串的起始索引。
+- **解题思路**：我们维护一个长度为`p`字符串的长度的滑动窗口，判断在这些子串中，是否和`p`是异位词。
+
+代码：
+```java
+class Solution {
+    public List<Integer> findAnagrams(String s, String p) {
+        List<Integer> ans = new ArrayList<>();
+        int[] cntP = new int[26]; // 记录出现的字符数
+        int[] cntS = new int[26];
+        for (char c : p.toCharArray()) {
+            cntP[c - 'a'] ++; // 记录p的字符状态
+        }
+        for (int r = 0; r < s.length(); r ++) {
+            cntS[s.charAt(r) - 'a'] ++;
+            int l = r - p.length() + 1;
+            if (l < 0) continue; // 窗口不足p的长度
+            if (Arrays.equals(cntS, cntP)) ans.add(l); // 满足要求加入答案
+            cntS[s.charAt(l) - 'a'] --; // 右移
+        }
+        return ans;
+    }
+}
+```
 
 ### 560. 和为 K 的子数组 <span class="difficulty-medium">中等</span> [560](https://leetcode.cn/problems/subarray-sum-equals-k/)
 - **描述**：给你一个整数数组 `nums` 和一个整数 `k`，请你统计并返回该数组中和为 `k` 的连续子数组的个数。
