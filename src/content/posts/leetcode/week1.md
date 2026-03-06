@@ -296,6 +296,17 @@ class Solution {
 
 代码：
 ```java
+/**
+ * Definition for singly-linked list.
+ * class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode(int x) {
+ *         val = x;
+ *         next = null;
+ *     }
+ * }
+ */
 class Solution {
     public ListNode mergeTwoLists(ListNode list1, ListNode list2) {
         ListNode dummy = new ListNode(); // 哨兵节点
@@ -350,6 +361,40 @@ public class Solution {
 
 ### 142. 环形链表 II <span class="difficulty-medium">中等</span> [142](https://leetcode.cn/problems/linked-list-cycle-ii/)
 - **描述**：给定一个链表的头节点 `head`，返回链表开始入环的第一个节点。如果链表无环，则返回 `null`。
+- **解题思路**：巧妙地思路，同样设置快慢指针，假设`head`距离环第一个节点距离为`a`，慢指针走了`b`步，则快指针走了`2b`步，假设存在环且环长为`c`。可以得出第一个结论:
+$2b - b = k * c$。其中k为正整数。即得到`b=kc`，慢指针从环的第一个节点走到相遇节点走了`b - a`也等于`kc -a`。这样就意味着，慢指针再走`a`步就走到了环的第一个节点，让`head`节点一起走，相遇点就是入环的点。
+
+代码：
+```java
+/**
+ * Definition for singly-linked list.
+ * class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode(int x) {
+ *         val = x;
+ *         next = null;
+ *     }
+ * }
+ */
+public class Solution {
+    public ListNode detectCycle(ListNode head) {
+        ListNode slow = head, fast = head;
+        while (fast != null && fast.next != null) {
+            slow = slow.next;
+            fast = fast.next.next;
+            if (slow == fast) {
+                while (slow != head) { // 相遇后让慢指针和head一起走，相遇点就是起点
+                    slow = slow.next;
+                    head = head.next;
+                }
+                return slow;
+            }
+        }
+        return null;
+    }
+}
+```
 
 ### 160. 相交链表 <span class="difficulty-easy">简单</span> [160](https://leetcode.cn/problems/intersection-of-two-linked-lists/)
 - **描述**：给你两个单链表的头节点 `headA` 和 `headB`，请你找出并返回两个单链表相交的起始节点。如果两个链表不存在相交节点，返回 `null`。
