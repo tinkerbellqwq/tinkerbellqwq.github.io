@@ -292,6 +292,29 @@ class Solution {
 
 ### 21. 合并两个有序链表 <span class="difficulty-easy">简单</span> [21](https://leetcode.cn/problems/merge-two-sorted-lists/)
 - **描述**：将两个升序链表合并为一个新的升序链表并返回。新链表是通过拼接给定的两个链表的所有节点组成的。
+- **解题思路**：设置一个哨兵节点作为合并后链表头节点的前一个节点。然后通过贪心每次拿两个链表头最小的。
+
+代码：
+```java
+class Solution {
+    public ListNode mergeTwoLists(ListNode list1, ListNode list2) {
+        ListNode dummy = new ListNode(); // 哨兵节点
+        ListNode cur = dummy; // cur 指向新链表的末尾
+        while (list1 != null && list2 != null) {
+            if (list1.val < list2.val) {
+                cur.next = list1; // 把 list1 加到新链表中
+                list1 = list1.next;
+            } else { // 注：相等的情况加哪个节点都是可以的
+                cur.next = list2; // 把 list2 加到新链表中
+                list2 = list2.next;
+            }
+            cur = cur.next;
+        }
+        cur.next = list1 != null ? list1 : list2; // 拼接剩余链表
+        return dummy.next;
+    }
+}
+```
 
 ### 141. 环形链表 <span class="difficulty-easy">简单</span> [141](https://leetcode.cn/problems/linked-list-cycle/)
 - **描述**：给你一个链表的头节点 `head`，判断链表中是否有环。
