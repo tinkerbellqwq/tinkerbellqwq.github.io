@@ -318,6 +318,35 @@ class Solution {
 
 ### 141. 环形链表 <span class="difficulty-easy">简单</span> [141](https://leetcode.cn/problems/linked-list-cycle/)
 - **描述**：给你一个链表的头节点 `head`，判断链表中是否有环。
+- **解题思路**：快慢指针，快的一次走2，慢的一次走1，如果有环，就一定会相遇。
+
+代码：
+```java
+/**
+ * Definition for singly-linked list.
+ * class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode(int x) {
+ *         val = x;
+ *         next = null;
+ *     }
+ * }
+ */
+public class Solution {
+    public boolean hasCycle(ListNode head) {
+        ListNode slow = head, fast = head; // 设置快慢指针
+        while (fast != null && fast.next != null) {
+            slow = slow.next; // 慢的走一次
+            fast = fast.next.next; // 快的走两次。
+            if (fast == slow) { // 相遇即有环。
+                return true;
+            }
+        }
+        return false;
+    }
+}
+```
 
 ### 142. 环形链表 II <span class="difficulty-medium">中等</span> [142](https://leetcode.cn/problems/linked-list-cycle-ii/)
 - **描述**：给定一个链表的头节点 `head`，返回链表开始入环的第一个节点。如果链表无环，则返回 `null`。
