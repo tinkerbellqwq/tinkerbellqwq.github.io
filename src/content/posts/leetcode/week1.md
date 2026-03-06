@@ -398,7 +398,38 @@ public class Solution {
 
 ### 160. 相交链表 <span class="difficulty-easy">简单</span> [160](https://leetcode.cn/problems/intersection-of-two-linked-lists/)
 - **描述**：给你两个单链表的头节点 `headA` 和 `headB`，请你找出并返回两个单链表相交的起始节点。如果两个链表不存在相交节点，返回 `null`。
+- **思路**：同样的我们假设`headA`和`headB`在某个节点相交。用`x`表示`headA`到相交点的节点数，`y`表示`headB`到相交点的节点数，`z`表示公共的节点数。我们从三个方面考虑：
+    - $x = y$：那让`headA`和`headB`一起走就会相遇。  
+    - $x < y$：$x + z < y + z$，那两边分别加上对方就能得到：$x + z + y = y + z + x$
+    - $x > y$：同上可得：$x + z + y = y + z + x$
+也就是说，只要让走到null的链表，从对方链表头重新走，一定会走到相遇的点的，如果没有相交，那他们都会走向null。
 
+附评论区评论：当我在我的路上走过一遍依然没有遇见你时，那么我会接着来到你走过的路走一遍，如果我们心有灵犀，那么我们终将相遇。
+
+参考代码：
+```java
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode(int x) {
+ *         val = x;
+ *         next = null;
+ *     }
+ * }
+ */
+public class Solution {
+    public ListNode getIntersectionNode(ListNode headA, ListNode headB) {
+        ListNode p = headA, q = headB;
+        while (p != q) {
+            p = p != null ? p.next : headB; // 走到尽头走对方的路
+            q = q != null ? q.next : headA;
+        }
+        return p;
+    }
+}
+```
 ---
 
 ## Day 5: 链表进阶
