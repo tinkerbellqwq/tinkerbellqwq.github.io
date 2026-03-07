@@ -510,6 +510,42 @@ class Solution {
 ### 23. 合并 K 个升序链表 <span class="difficulty-hard">困难</span> [23](https://leetcode.cn/problems/merge-k-sorted-lists/)
 - **描述**：给你一个链表数组，每个链表都已经按升序排列。请你将所有链表合并到一个升序链表中，返回合并后的链表。
 
+- **解题思路**：给出一个**最小堆**的解法。需要一个这样的数据结构：每次从每个链表的头节点找出最小值。可以使用**最小堆**，先把所有链表的头节点放进去，拿到最小值的节点后，把这个节点的下一个节点也加入到堆中（有可能这个还会比其他节点满足条件）。
+
+参考代码：
+```java
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode() {}
+ *     ListNode(int val) { this.val = val; }
+ *     ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+ * }
+ */
+class Solution {
+    public ListNode mergeKLists(ListNode[] lists) {
+        PriorityQueue<ListNode> pq = new PriorityQueue<>((a, b) -> a.val - b.val);
+        for (ListNode head : lists) {
+            if (head != null) {
+                pq.offer(head); // 把非空链表头节点入堆。
+            }
+        }
+        ListNode dummy = new ListNode(); // 哨兵结点，作为合并后链表头节点的前一个结点。
+        ListNode cur = dummy;
+        while (!pq.isEmpty()) { // 一直循环至堆空
+            ListNode node = pq.poll(); // 剩余节点值最小的。
+            if (node.next != null) { // 下一个节点不为空
+                pq.offer(node.next); // 下一个节点有可能是最小的，入堆
+            }
+            cur.next = node; // 把node添加到新链表的末尾
+            cur = cur.next; 
+        }
+        return dummy.next;
+    }
+}
+```
 ---
 
 ## Day 6: 复习日
