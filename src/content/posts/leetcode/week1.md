@@ -436,6 +436,43 @@ public class Solution {
 
 ### 2. 两数相加 <span class="difficulty-medium">中等</span> [2](https://leetcode.cn/problems/add-two-numbers/)
 - **描述**：给你两个非空的链表，表示两个非负的整数。它们每位数字都是按照逆序的方式存储的，并且每个节点只能存储一位数字。请你将两个数相加，并以相同形式返回一个表示和的链表。
+- **解题思路**：因为是逆序的，就跟做加法一样，遍历过去就好了。具体看代码
+
+参考代码：
+```java
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode() {}
+ *     ListNode(int val) { this.val = val; }
+ *     ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+ * }
+ */
+class Solution {
+    public ListNode addTwoNumbers(ListNode l1, ListNode l2) {
+        ListNode res = new ListNode(); // 设置一个哨兵
+        ListNode tmp = res; // 真正移动的
+        int add = 0; // 进位
+        while(l1 != null || l2 != null || add != 0) { // 只要还有数或者没有进位
+            if (l1 != null) {
+                add += l1.val;
+                l1 = l1.next;
+            }
+            if (l2 != null) {
+                add += l2.val;
+                l2 = l2.next;
+            }
+            // tmp = tmp.next = new ListNode(add % 10);
+            tmp.next = new ListNode(add % 10); // 创建一个新的节点并移动
+            tmp = tmp.next;
+            add /= 10;
+        }
+        return res.next;
+    }
+}
+```
 
 ### 19. 删除链表的倒数第 N 个结点 <span class="difficulty-medium">中等</span> [19](https://leetcode.cn/problems/remove-nth-node-from-end-of-list/)
 - **描述**：给你一个链表，删除链表的倒数第 `n` 个结点，并且返回链表的头结点。
