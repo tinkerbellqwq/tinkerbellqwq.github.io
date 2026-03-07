@@ -476,6 +476,36 @@ class Solution {
 
 ### 19. 删除链表的倒数第 N 个结点 <span class="difficulty-medium">中等</span> [19](https://leetcode.cn/problems/remove-nth-node-from-end-of-list/)
 - **描述**：给你一个链表，删除链表的倒数第 `n` 个结点，并且返回链表的头结点。
+- **思路**：首先，删除倒数第`n`个结点，要找到倒数第`n+1`个结点`L`，执行`L.next = L.next.next`即可删除。如果只能遍历一遍，可以考虑一把长度为`n`的尺子，左边在链表的起点，当右边走到了最后一个节点，那左边就是要删除的结点。因为要删除，所以我们找到倒数`n+1`个结点，为了防止`n`就是链表的长度，我们可以设置一个哨兵(`dummy`)结点在头节点的前面，可以省去很大的麻烦。具体参考代码。
+
+参考代码：
+```java
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode() {}
+ *     ListNode(int val) { this.val = val; }
+ *     ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+ * }
+ */
+class Solution {
+    public ListNode removeNthFromEnd(ListNode head, int n) {
+        ListNode dummy = new ListNode(0, head); // 在头结点的前面设置一个哨兵结点。
+        ListNode left = dummy, right = dummy;
+        while (n -- > 0) { // 先让右边的走n步
+            right = right.next;
+        }
+        while (right.next != null) { // 因为要找到倒数n+1，所以不能遍历到最后一个节点，是倒数第二个结点。
+            right = right.next;
+            left = left.next;
+        }
+        left.next = left.next.next; // 删除
+        return dummy.next; // 返回头结点。
+    }
+}
+```
 
 ### 23. 合并 K 个升序链表 <span class="difficulty-hard">困难</span> [23](https://leetcode.cn/problems/merge-k-sorted-lists/)
 - **描述**：给你一个链表数组，每个链表都已经按升序排列。请你将所有链表合并到一个升序链表中，返回合并后的链表。
