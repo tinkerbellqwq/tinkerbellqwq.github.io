@@ -7,8 +7,7 @@ category: "面试求职"
 draft: false
 ---
 
-## 面试背景
-俄国水本毕业，现北欧某国水硕在读。
+> 来源：[牛客](https://www.nowcoder.com/)
 
 ## 面试问题整理
 
