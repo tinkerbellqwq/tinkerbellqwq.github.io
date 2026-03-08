@@ -550,9 +550,54 @@ class Solution {
 
 ## Day 6: 复习日
 
-- 重做本周错题
-- 总结哈希表、双指针、链表的常见模板
-- 整理时间复杂度和空间复杂度
+- [x] 重做本周 Hot 100 题目及错题
+- [x] 归纳总结哈希表、双指针、链表的核心算法模板
+- [x] 深度复盘本周题目的时间复杂度与空间复杂度
+
+### 核心算法模板总结
+
+#### 1. 哈希表 (Hash Map)
+用于 $O(1)$ 时间复杂度的快速查找 
+```java
+Map<Integer, Integer> map = new HashMap<>();
+for (int i = 0; i < nums.length; i++) {
+    int complement = target - nums[i];
+    if (map.containsKey(complement)) return new int[] { map.get(complement), i };
+    map.put(nums[i], i);
+}
+```
+
+#### 2. 双指针 (Double Pointers)
+- **对撞指针** (用于盛水容器、三数之和)
+```java
+int l = 0, r = nums.length - 1;
+while (l < r) {
+    if (condition) l++;
+    else r--;
+}
+```
+- **快慢指针** (用于移动零、环形链表)
+```java
+ListNode slow = head, fast = head;
+while (fast != null && fast.next != null) {
+    slow = slow.next;
+    fast = fast.next.next;
+    if (slow == fast) return true;
+}
+```
+
+#### 3. 链表 (Linked List)
+- **反转链表** (经典之战)
+```java
+ListNode prev = null, curr = head;
+while (curr != null) {
+    ListNode next = curr.next;
+    curr.next = prev;
+    prev = curr;
+    curr = next;
+}
+return prev;
+```
 
 ---
 
