@@ -7,7 +7,7 @@
     </button>
 
     <!-- Chat Window -->
-    <div v-show="isOpen" class="chat-window" :style="windowStyle">
+    <div v-show="isOpen" class="chat-window" :style="windowStyle" ref="chatWindow">
       <div class="chat-header">
         <div class="header-left">
           <span class="chat-title">AI 助手</span>
@@ -37,13 +37,13 @@
         <button @click="sendMessage" :disabled="isLoading || !userInput.trim()">发送</button>
       </div>
       <!-- Resize Handle -->
-      <div class="resize-handle"></div>
+      <div class="resize-handle" @mousedown="startResize" title="拖拽调整大小"></div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, nextTick, onMounted, computed } from 'vue';
+import { ref, nextTick, onMounted, onBeforeUnmount, computed } from 'vue';
 import MarkdownIt from 'markdown-it';
 
 const md = new MarkdownIt({
@@ -62,6 +62,70 @@ const messages = ref([
   { role: 'assistant', content: '你好！我是主人的 AI 助手，有什么可以帮你的吗？' }
 ]);
 const messageContainer = ref(null);
+const chatWindow = ref(null);
+const windowStyle = ref({});
+
+const minWidth = 300;
+const minHeight = 400;
+let isResizing = false;
+let resizeStartX = 0;
+let resizeStartY = 0;
+let resizeStartWidth = 0;
+let resizeStartHeight = 0;
+let resizeRaf = 0;
+let previousUserSelect = '';
+
+const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+const getMaxWidth = () => Math.floor(window.innerWidth * 0.9);
+const getMaxHeight = () => Math.floor(window.innerHeight * 0.8);
+
+const applyResize = (width, height) => {
+  windowStyle.value = {
+    width: `${width}px`,
+    height: `${height}px`
+  };
+};
+
+const onResizeMove = (event) => {
+  if (!isResizing) return;
+  const dx = event.clientX - resizeStartX;
+  const dy = event.clientY - resizeStartY;
+  const nextWidth = clamp(resizeStartWidth - dx, minWidth, getMaxWidth());
+  const nextHeight = clamp(resizeStartHeight - dy, minHeight, getMaxHeight());
+  if (resizeRaf) cancelAnimationFrame(resizeRaf);
+  resizeRaf = requestAnimationFrame(() => {
+    applyResize(nextWidth, nextHeight);
+  });
+};
+
+const stopResize = () => {
+  if (!isResizing) return;
+  isResizing = false;
+  if (resizeRaf) cancelAnimationFrame(resizeRaf);
+  resizeRaf = 0;
+  document.body.style.userSelect = previousUserSelect;
+  window.removeEventListener('mousemove', onResizeMove);
+  window.removeEventListener('mouseup', stopResize);
+};
+
+const startResize = (event) => {
+  if (!chatWindow.value) return;
+  const rect = chatWindow.value.getBoundingClientRect();
+  isResizing = true;
+  resizeStartX = event.clientX;
+  resizeStartY = event.clientY;
+  resizeStartWidth = rect.width;
+  resizeStartHeight = rect.height;
+  previousUserSelect = document.body.style.userSelect;
+  document.body.style.userSelect = 'none';
+  window.addEventListener('mousemove', onResizeMove);
+  window.addEventListener('mouseup', stopResize);
+  event.preventDefault();
+};
+
+onBeforeUnmount(() => {
+  stopResize();
+});
 
 // 过滤掉思考内容
 const processedMessages = computed(() => {
@@ -127,6 +191,14 @@ const savePreference = () => {
   localStorage.setItem('ai_chat_model', currentModel.value);
 };
 
+const getChoiceContent = (choice) => {
+  if (!choice) return '';
+  if (choice.delta && typeof choice.delta.content === 'string') return choice.delta.content;
+  if (choice.message && typeof choice.message.content === 'string') return choice.message.content;
+  if (typeof choice.text === 'string') return choice.text;
+  return '';
+};
+
 const sendMessage = async () => {
   if (!userInput.value.trim() || isLoading.value) return;
 
@@ -156,30 +228,86 @@ const sendMessage = async () => {
 
     if (!response.ok) throw new Error('网络请求失败');
 
+    if (!response.body) throw new Error('响应体为空');
+
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
     let assistantMsg = { role: 'assistant', content: '' };
     messages.value.push(assistantMsg);
-    isStreaming.value = true;
 
-    while (true) {
+    let buffer = '';
+    let rawText = '';
+    let sawDataLine = false;
+    let appended = false;
+    let streamDone = false;
+
+    const appendContent = async (text) => {
+      if (!text) return;
+      appended = true;
+      assistantMsg.content += text;
+      await scrollToBottom();
+    };
+
+    const processLine = async (line) => {
+      const trimmed = line.trim();
+      if (!trimmed || !trimmed.startsWith('data:')) return;
+      sawDataLine = true;
+      if (!isStreaming.value) isStreaming.value = true;
+      const dataStr = trimmed.replace(/^data:\s*/, '');
+      if (!dataStr) return;
+      if (dataStr === '[DONE]') {
+        streamDone = true;
+        return;
+      }
+      try {
+        const data = JSON.parse(dataStr);
+        const delta = getChoiceContent(data?.choices?.[0]);
+        if (delta) {
+          await appendContent(delta);
+        }
+      } catch (e) {}
+    };
+
+    while (!streamDone) {
       const { done, value } = await reader.read();
       if (done) break;
-      
-      const chunk = decoder.decode(value);
-      const lines = chunk.split('\n');
-      
+
+      const chunk = decoder.decode(value, { stream: true });
+      rawText += chunk;
+      buffer += chunk;
+      const lines = buffer.split(/\r?\n/);
+      buffer = lines.pop() || '';
+
       for (const line of lines) {
-        if (line.startsWith('data: ')) {
-          const dataStr = line.slice(6).trim();
-          if (dataStr === '[DONE]') break;
-          try {
-            const data = JSON.parse(dataStr);
-            const delta = data.choices[0].delta.content || '';
-            assistantMsg.content += delta;
-            await scrollToBottom();
-          } catch (e) {}
+        await processLine(line);
+        if (streamDone) break;
+      }
+    }
+
+    const rest = decoder.decode();
+    rawText += rest;
+    buffer += rest;
+
+    if (!streamDone && buffer) {
+      const tailLines = buffer.split(/\r?\n/);
+      for (const line of tailLines) {
+        await processLine(line);
+      }
+    }
+
+    if (!appended) {
+      const fallbackText = rawText.trim();
+      if (fallbackText) {
+        try {
+          const data = JSON.parse(fallbackText);
+          const content = getChoiceContent(data?.choices?.[0]);
+          assistantMsg.content = content || fallbackText;
+        } catch (e) {
+          assistantMsg.content = fallbackText;
         }
+        await scrollToBottom();
+      } else if (!sawDataLine) {
+        assistantMsg.content = '模型未返回可显示的内容。';
       }
     }
   } catch (error) {
@@ -235,9 +363,7 @@ const sendMessage = async () => {
   display: flex;
   flex-direction: column;
   border: 1px solid #e5e7eb;
-  /* 解决调整大小的关键：必须设置 overflow 且 resize 作用于此容器 */
   overflow: hidden; 
-  resize: both;
 }
 
 .chat-header {
@@ -403,13 +529,13 @@ const sendMessage = async () => {
 /* Custom Resize Handle Area */
 .resize-handle {
   position: absolute;
-  right: 0;
+  left: 0;
   bottom: 0;
-  width: 15px;
-  height: 15px;
-  cursor: nwse-resize;
-  background: linear-gradient(135deg, transparent 50%, #d1d5db 50%);
-  border-bottom-right-radius: 12px;
+  width: 18px;
+  height: 18px;
+  cursor: nesw-resize;
+  background: linear-gradient(45deg, transparent 50%, #d1d5db 50%);
+  border-bottom-left-radius: 12px;
 }
 
 .loading {
