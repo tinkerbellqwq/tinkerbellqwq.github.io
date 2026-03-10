@@ -16,6 +16,37 @@ draft: false
 
 ### 104. 二叉树的最大深度 <span class="difficulty-easy">简单</span> [104](https://leetcode.cn/problems/maximum-depth-of-binary-tree/)
 - **描述**：给定一个二叉树，找出其最大深度。二叉树的深度为根节点到最远叶子节点的最长路径上的节点数。
+- **思路**：答案等于左子树最大与右子树最大的最大值+1，递归求解即可。
+
+**CODE**:
+```java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode() {}
+ *     TreeNode(int val) { this.val = val; }
+ *     TreeNode(int val, TreeNode left, TreeNode right) {
+ *         this.val = val;
+ *         this.left = left;
+ *         this.right = right;
+ *     }
+ * }
+ */
+class Solution {
+    public int maxDepth(TreeNode root) {
+        if (root == null) {
+            return 0; // 空
+        }
+        int ldeepth = maxDepth(root.left); // 左子树的最大值
+        int rdeepth = maxDepth(root.right); // 右子树的最大值
+        return Math.max(ldeepth, rdeepth) + 1;
+    }
+}
+```
+
 
 ### 101. 对称二叉树 <span class="difficulty-easy">简单</span> [101](https://leetcode.cn/problems/symmetric-tree/)
 - **描述**：给你一个二叉树的根节点 `root`，检查它是否轴对称。
