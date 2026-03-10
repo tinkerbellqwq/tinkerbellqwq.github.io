@@ -43,7 +43,7 @@
 </template>
 
 <script setup>
-import { ref, nextTick, onMounted, onBeforeUnmount, computed } from 'vue';
+import { ref, nextTick, onMounted, onBeforeUnmount, computed, watch } from 'vue';
 import MarkdownIt from 'markdown-it';
 import renderMathInElement from 'katex/contrib/auto-render';
 
@@ -53,6 +53,10 @@ const md = new MarkdownIt({
   typographer: true
 });
 
+const STORAGE_KEY = 'ai_chat_messages_v1';
+const MAX_MESSAGES = 100;
+const DEFAULT_ASSISTANT_MESSAGE = '你好！我是主人的 AI 助手，有什么可以帮你的吗？';
+
 const isOpen = ref(false);
 const userInput = ref('');
 const isLoading = ref(false);
@@ -60,7 +64,7 @@ const isStreaming = ref(false);
 const availableModels = ref([{ id: 'deepseek-ai/deepseek-v3.2' }]);
 const currentModel = ref('deepseek-ai/deepseek-v3.2');
 const messages = ref([
-  { role: 'assistant', content: '你好！我是主人的 AI 助手，有什么可以帮你的吗？' }
+  { role: 'assistant', content: DEFAULT_ASSISTANT_MESSAGE }
 ]);
 const messageContainer = ref(null);
 const chatWindow = ref(null);
@@ -75,6 +79,7 @@ let resizeStartWidth = 0;
 let resizeStartHeight = 0;
 let resizeRaf = 0;
 let previousUserSelect = '';
+let saveTimer = 0;
 
 const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 const getMaxWidth = () => Math.floor(window.innerWidth * 0.9);
@@ -126,6 +131,7 @@ const startResize = (event) => {
 
 onBeforeUnmount(() => {
   stopResize();
+  if (saveTimer) clearTimeout(saveTimer);
 });
 
 // 过滤掉思考内容
@@ -174,6 +180,43 @@ const renderMath = async () => {
   } catch (e) {}
 };
 
+const normalizeMessages = (input) => {
+  if (!Array.isArray(input)) return [];
+  return input
+    .filter((item) => item && typeof item.role === 'string' && typeof item.content === 'string')
+    .map((item) => ({ role: item.role, content: item.content }))
+    .slice(-MAX_MESSAGES);
+};
+
+const loadMessages = () => {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed)) return normalizeMessages(parsed);
+    if (parsed && Array.isArray(parsed.messages)) return normalizeMessages(parsed.messages);
+  } catch (e) {}
+  return [];
+};
+
+const persistMessages = (list) => {
+  try {
+    const payload = {
+      version: 1,
+      savedAt: Date.now(),
+      messages: normalizeMessages(list)
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+  } catch (e) {}
+};
+
+const schedulePersist = (list) => {
+  if (saveTimer) clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    persistMessages(list);
+  }, 300);
+};
+
 const clearMessages = () => {
   messages.value = [{ role: 'assistant', content: '记忆已清除，开启新的对话吧！' }];
 };
@@ -201,12 +244,28 @@ const fetchModels = async () => {
 };
 
 onMounted(() => {
+  const storedMessages = loadMessages();
+  if (storedMessages.length > 0) {
+    messages.value = storedMessages;
+  } else {
+    messages.value = [{ role: 'assistant', content: DEFAULT_ASSISTANT_MESSAGE }];
+  }
   fetchModels();
+  void scrollToBottom();
+  void renderMath();
 });
 
 const savePreference = () => {
   localStorage.setItem('ai_chat_model', currentModel.value);
 };
+
+watch(
+  messages,
+  (next) => {
+    schedulePersist(next);
+  },
+  { deep: true }
+);
 
 const getChoiceContent = (choice) => {
   if (!choice) return '';
