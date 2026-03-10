@@ -51,6 +51,39 @@ class Solution {
 ### 101. 对称二叉树 <span class="difficulty-easy">简单</span> [101](https://leetcode.cn/problems/symmetric-tree/)
 - **描述**：给你一个二叉树的根节点 `root`，检查它是否轴对称。
 
+- **思路**：是否轴对称，也就是根节点的左子树和右子树要是一样的。给定左子树`p`和右子树`q`，题目相同要满足如下：
+  - `p.val` = `q.val`
+  - `p`的左子树要与`q`的右子树一样。可递归判断
+  - `p`的右子树要与`q`的左子树一样。
+
+代码：
+```java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode() {}
+ *     TreeNode(int val) { this.val = val; }
+ *     TreeNode(int val, TreeNode left, TreeNode right) {
+ *         this.val = val;
+ *         this.left = left;
+ *         this.right = right;
+ *     }
+ * }
+ */
+class Solution {
+    public boolean isSymmetric(TreeNode root) {
+        return isSameTree(root.left, root.right);
+    }
+    private boolean isSameTree(TreeNode p, TreeNode q) {
+        if (p == null || q == null) return p == q;
+        return p.val == q.val && isSameTree(p.left, q.right) && isSameTree(p.right, q.left); // 值相同且左子树与右子树一样。
+    }
+}
+```
+
 ### 102. 二叉树的层序遍历 <span class="difficulty-medium">中等</span> [102](https://leetcode.cn/problems/binary-tree-level-order-traversal/)
 - **描述**：给你二叉树的根节点 `root`，返回其节点值的层序遍历。（即逐层地，从左到右访问所有节点）。
 
