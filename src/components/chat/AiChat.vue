@@ -7,9 +7,14 @@
     </button>
 
     <!-- Chat Window -->
-    <div v-show="isOpen" class="chat-window">
+    <div v-show="isOpen" class="chat-window" ref="chatWindow">
       <div class="chat-header">
-        <span class="chat-title">AI 助手</span>
+        <div class="header-left">
+          <span class="chat-title">AI 助手</span>
+          <select v-model="currentModel" class="model-select" @change="savePreference">
+            <option v-for="m in availableModels" :key="m.id" :value="m.id">{{ m.id }}</option>
+          </select>
+        </div>
         <button @click="clearMessages" class="clear-button">清空</button>
       </div>
       
@@ -49,6 +54,8 @@ const isOpen = ref(false);
 const userInput = ref('');
 const isLoading = ref(false);
 const isStreaming = ref(false);
+const availableModels = ref([{ id: 'deepseek-ai/deepseek-v3.2' }]);
+const currentModel = ref('deepseek-ai/deepseek-v3.2');
 const messages = ref([
   { role: 'assistant', content: '你好！我是主人的 AI 助手，有什么可以帮你的吗？' }
 ]);
@@ -76,6 +83,36 @@ const clearMessages = () => {
   messages.value = [{ role: 'assistant', content: '记忆已清除，开启新的对话吧！' }];
 };
 
+const fetchModels = async () => {
+  try {
+    const response = await fetch('https://api.veyu.me/v1/models', {
+      headers: {
+        'Authorization': 'Bearer sk-wj2ApVgdELzimNO02YJRGS5iaAOXximWwpjnY9aJi9GKCPGg'
+      }
+    });
+    const data = await response.json();
+    if (data.data) {
+      availableModels.value = data.data;
+      const savedModel = localStorage.getItem('ai_chat_model');
+      if (savedModel && data.data.find(m => m.id === savedModel)) {
+        currentModel.value = savedModel;
+      } else if (!data.data.find(m => m.id === currentModel.value)) {
+        currentModel.value = data.data[0].id;
+      }
+    }
+  } catch (e) {
+    console.error('Fetch models failed', e);
+  }
+};
+
+onMounted(() => {
+  fetchModels();
+});
+
+const savePreference = () => {
+  localStorage.setItem('ai_chat_model', currentModel.value);
+};
+
 const sendMessage = async () => {
   if (!userInput.value.trim() || isLoading.value) return;
 
@@ -94,10 +131,10 @@ const sendMessage = async () => {
         'Authorization': 'Bearer sk-wj2ApVgdELzimNO02YJRGS5iaAOXximWwpjnY9aJi9GKCPGg'
       },
       body: JSON.stringify({
-        model: 'deepseek-ai/deepseek-v3.2',
+        model: currentModel.value,
         messages: [
           { role: 'system', content: '你是一个友好且专业的 AI 助手，负责在博客中回答读者的问题。请使用 Markdown 格式回答。' },
-          ...messages.value.map(m => ({ role: m.role, content: m.content }))
+          ...messages.value.filter(m => m.content !== '记忆已清除，开启新的对话吧！').map(m => ({ role: m.role, content: m.content }))
         ],
         stream: true
       })
@@ -127,9 +164,7 @@ const sendMessage = async () => {
             const delta = data.choices[0].delta.content || '';
             assistantMsg.content += delta;
             await scrollToBottom();
-          } catch (e) {
-            // 忽略非JSON行
-          }
+          } catch (e) {}
         }
       }
     }
@@ -183,24 +218,55 @@ const sendMessage = async () => {
   box-shadow: 0 8px 24px rgba(0,0,0,0.2);
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: auto; 
+  resize: both;
   border: 1px solid #e5e7eb;
-  resize: both; /* 允许调整大小 */
 }
 
 .chat-header {
-  padding: 12px 16px;
+  padding: 8px 16px;
   background: #3b82f6;
   color: white;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  cursor: default;
   flex-shrink: 0;
+}
+
+.header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .chat-title {
   font-weight: bold;
+  font-size: 14px;
+}
+
+.model-select {
+  background: rgba(255,255,255,0.2);
+  border: 1px solid rgba(255,255,255,0.4);
+  color: white;
+  font-size: 11px;
+  border-radius: 4px;
+  padding: 2px 4px;
+  outline: none;
+  max-width: 180px;
+}
+
+.model-select option {
+  color: #374151;
+}
+
+.clear-button {
+  background: rgba(255,255,255,0.2);
+  border: none;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
 }
 
 .chat-messages {
@@ -235,10 +301,34 @@ const sendMessage = async () => {
   border: 1px solid #e5e7eb;
 }
 
-.markdown-body :deep(p) { margin-bottom: 8px; }
-.markdown-body :deep(code) { background: #f3f4f6; padding: 2px 4px; border-radius: 4px; font-family: monospace; }
-.markdown-body :deep(pre) { background: #1f2937; color: white; padding: 12px; border-radius: 6px; overflow-x: auto; margin: 8px 0; }
+/* Markdown Styles Fix */
+.markdown-body :deep(p) { margin-bottom: 8px; color: inherit; }
+.markdown-body :deep(code) { 
+  background: #fee2e2; 
+  color: #991b1b; 
+  padding: 2px 4px; 
+  border-radius: 4px; 
+  font-family: monospace;
+  font-size: 0.9em;
+}
+.markdown-body :deep(pre) { 
+  background: #1e293b; 
+  color: #f8fafc; 
+  padding: 12px; 
+  border-radius: 6px; 
+  overflow-x: auto; 
+  margin: 10px 0; 
+  border: 1px solid #334155;
+}
+.markdown-body :deep(pre code) { 
+  background: transparent; 
+  color: #cbd5e1; 
+  padding: 0; 
+  font-size: 13px;
+  line-height: 1.6;
+}
 .markdown-body :deep(ul), .markdown-body :deep(ol) { padding-left: 20px; margin-bottom: 8px; }
+.markdown-body :deep(li) { margin-bottom: 4px; }
 
 .chat-input-area {
   padding: 12px;
@@ -270,5 +360,10 @@ const sendMessage = async () => {
 
 .chat-input-area button:disabled {
   opacity: 0.5;
+}
+
+.loading {
+  font-style: italic;
+  opacity: 0.7;
 }
 </style>
