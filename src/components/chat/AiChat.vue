@@ -45,6 +45,7 @@
 <script setup>
 import { ref, nextTick, onMounted, onBeforeUnmount, computed } from 'vue';
 import MarkdownIt from 'markdown-it';
+import renderMathInElement from 'katex/contrib/auto-render';
 
 const md = new MarkdownIt({
   html: true,
@@ -155,6 +156,22 @@ const scrollToBottom = async () => {
   if (messageContainer.value) {
     messageContainer.value.scrollTop = messageContainer.value.scrollHeight;
   }
+};
+
+const renderMath = async () => {
+  await nextTick();
+  if (!messageContainer.value) return;
+  try {
+    renderMathInElement(messageContainer.value, {
+      delimiters: [
+        { left: '$$', right: '$$', display: true },
+        { left: '\\[', right: '\\]', display: true },
+        { left: '$', right: '$', display: false },
+        { left: '\\(', right: '\\)', display: false }
+      ],
+      throwOnError: false
+    });
+  } catch (e) {}
 };
 
 const clearMessages = () => {
@@ -320,6 +337,7 @@ const sendMessage = async () => {
     isLoading.value = false;
     isStreaming.value = false;
     await scrollToBottom();
+    await renderMath();
   }
 };
 </script>
