@@ -86,6 +86,46 @@ class Solution {
 
 ### 102. 二叉树的层序遍历 <span class="difficulty-medium">中等</span> [102](https://leetcode.cn/problems/binary-tree-level-order-traversal/)
 - **描述**：给你二叉树的根节点 `root`，返回其节点值的层序遍历。（即逐层地，从左到右访问所有节点）。
+- **解题思路**：BFS模板题，用队列的先入先出特性，每次可以拿到一层的节点，然后遍历即可。
+
+代码：
+```java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode() {}
+ *     TreeNode(int val) { this.val = val; }
+ *     TreeNode(int val, TreeNode left, TreeNode right) {
+ *         this.val = val;
+ *         this.left = left;
+ *         this.right = right;
+ *     }
+ * }
+ */
+class Solution {
+    public List<List<Integer>> levelOrder(TreeNode root) {
+        if (root == null) return List.of(); // 返回空
+        List<List<Integer>> ans = new ArrayList<>();
+        Queue<TreeNode> q = new ArrayDeque<>(); // 定义队列
+        q.add(root);
+        while (!q.isEmpty()) {
+            int n = q.size(); // 拿到当前层的个数
+            List<Integer> vals = new ArrayList<>(n);
+            while (n-- > 0) { // 获取当前层的节点。
+                TreeNode node = q.poll();
+                vals.add(node.val);
+                if (node.left != null) q.offer(node.left); // 还有节点就加入队列
+                if (node.right != null) q.offer(node.right);
+            }
+            ans.add(vals); // 加入这一层答案
+        }
+        return ans;
+    }
+}
+```
 
 ### 108. 将有序数组转换为二叉搜索树 <span class="difficulty-easy">简单</span> [108](https://leetcode.cn/problems/convert-sorted-array-to-binary-search-tree/)
 - **描述**：给你一个整数数组 `nums`，其中元素已经按升序排列，请你将其转换为一棵高度平衡二叉搜索树。
