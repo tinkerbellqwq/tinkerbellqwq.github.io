@@ -232,8 +232,8 @@ const sendMessage = async () => {
 
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
-    let assistantMsg = { role: 'assistant', content: '' };
-    messages.value.push(assistantMsg);
+    messages.value.push({ role: 'assistant', content: '' });
+    const assistantMsg = messages.value[messages.value.length - 1];
 
     let buffer = '';
     let rawText = '';

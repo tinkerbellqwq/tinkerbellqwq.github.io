@@ -87,26 +87,6 @@ const mainPanelTop = siteConfig.banner.enable
                     <!-- the overflow-hidden here prevent long text break the layout-->
                     <!-- make id different from windows.swup global property -->
                     <slot></slot>
-                    <!--  插入 Giscus 评论区  -->
-                    {setOGTypeArticle && (
-                        <div class="mt-8 mb-8 w-full">
-                            <script src="https://giscus.app/client.js"
-                            data-repo="tinkerbellqwq/tinkerbellqwq.github.io"
-                            data-repo-id="R_kgDOOj4jrw"
-                            data-category="General"
-                            data-category-id="DIC_kwDOOj4jr84C33Xf"
-                            data-mapping="pathname"
-                            data-strict="0"
-                            data-reactions-enabled="1"
-                            data-emit-metadata="0"
-                            data-input-position="bottom"
-                            data-theme="light"
-                            data-lang="zh-CN"
-                            crossorigin="anonymous"
-                            async>
-                    </script>
-                        </div>
-                    )}
                     <div class="footer col-span-2 onload-animation hidden lg:block">
                         <Footer></Footer>
                     </div>
