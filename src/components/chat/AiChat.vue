@@ -7,7 +7,7 @@
     </button>
 
     <!-- Chat Window -->
-    <div v-show="isOpen" class="chat-window" ref="chatWindow">
+    <div v-show="isOpen" class="chat-window">
       <div class="chat-header">
         <div class="header-left">
           <span class="chat-title">AI 助手</span>
@@ -19,7 +19,7 @@
       </div>
       
       <div class="chat-messages" ref="messageContainer">
-        <div v-for="(msg, index) in messages" :key="index" :class="['message', msg.role]">
+        <div v-for="(msg, index) in processedMessages" :key="index" :class="['message', msg.role]">
           <div class="message-content markdown-body" v-html="renderMarkdown(msg.content)"></div>
         </div>
         <div v-if="isLoading && !isStreaming" class="message assistant loading">
@@ -41,7 +41,7 @@
 </template>
 
 <script setup>
-import { ref, nextTick, onMounted } from 'vue';
+import { ref, nextTick, onMounted, computed } from 'vue';
 import MarkdownIt from 'markdown-it';
 
 const md = new MarkdownIt({
@@ -60,6 +60,19 @@ const messages = ref([
   { role: 'assistant', content: '你好！我是主人的 AI 助手，有什么可以帮你的吗？' }
 ]);
 const messageContainer = ref(null);
+
+// 过滤掉思考内容
+const processedMessages = computed(() => {
+  return messages.value.map(msg => {
+    if (msg.role === 'assistant') {
+      // 过滤 [WebSearch] 或其他类似格式的思考过程
+      let cleanContent = msg.content.replace(/\\[WebSearch\\]/g, '');
+      // 也可以尝试过滤包含在特定标签里的思考内容，如果 API 返回的话
+      return { ...msg, content: cleanContent.trim() };
+    }
+    return msg;
+  });
+});
 
 const renderMarkdown = (content) => {
   return md.render(content);
@@ -133,7 +146,7 @@ const sendMessage = async () => {
       body: JSON.stringify({
         model: currentModel.value,
         messages: [
-          { role: 'system', content: '你是一个友好且专业的 AI 助手，负责在博客中回答读者的问题。请使用 Markdown 格式回答。' },
+          { role: 'system', content: '你是一个友好且专业的 AI 助手，负责在博客中回答读者的问题。请直接回答问题，不要输出思考过程。请使用 Markdown 格式回答。' },
           ...messages.value.filter(m => m.content !== '记忆已清除，开启新的对话吧！').map(m => ({ role: m.role, content: m.content }))
         ],
         stream: true
@@ -218,9 +231,15 @@ const sendMessage = async () => {
   box-shadow: 0 8px 24px rgba(0,0,0,0.2);
   display: flex;
   flex-direction: column;
-  overflow: auto; 
-  resize: both;
   border: 1px solid #e5e7eb;
+  /* 解决调整大小的问题：必须同时设置 overflow 且不能为 visible */
+  overflow: hidden; 
+  resize: both;
+}
+
+/* 内部内容需要自适应 resize 后的窗口 */
+.chat-window > * {
+  width: 100%;
 }
 
 .chat-header {
@@ -253,10 +272,6 @@ const sendMessage = async () => {
   padding: 2px 4px;
   outline: none;
   max-width: 180px;
-}
-
-.model-select option {
-  color: #374151;
 }
 
 .clear-button {
@@ -319,6 +334,8 @@ const sendMessage = async () => {
   overflow-x: auto; 
   margin: 10px 0; 
   border: 1px solid #334155;
+  /* 确保长代码块不会撑破对话框 */
+  max-width: 100%;
 }
 .markdown-body :deep(pre code) { 
   background: transparent; 
@@ -328,7 +345,6 @@ const sendMessage = async () => {
   line-height: 1.6;
 }
 .markdown-body :deep(ul), .markdown-body :deep(ol) { padding-left: 20px; margin-bottom: 8px; }
-.markdown-body :deep(li) { margin-bottom: 4px; }
 
 .chat-input-area {
   padding: 12px;
@@ -356,10 +372,6 @@ const sendMessage = async () => {
   border-radius: 20px;
   cursor: pointer;
   font-weight: 500;
-}
-
-.chat-input-area button:disabled {
-  opacity: 0.5;
 }
 
 .loading {
