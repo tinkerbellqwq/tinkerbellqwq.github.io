@@ -15,9 +15,9 @@
       
       <div class="chat-messages" ref="messageContainer">
         <div v-for="(msg, index) in messages" :key="index" :class="['message', msg.role]">
-          <div class="message-content" v-html="msg.content"></div>
+          <div class="message-content markdown-body" v-html="renderMarkdown(msg.content)"></div>
         </div>
-        <div v-if="isLoading" class="message assistant loading">
+        <div v-if="isLoading && !isStreaming" class="message assistant loading">
           <div class="message-content">AI 正在思考中...</div>
         </div>
       </div>
@@ -36,15 +36,27 @@
 </template>
 
 <script setup>
-import { ref, nextTick } from 'vue';
+import { ref, nextTick, onMounted } from 'vue';
+import MarkdownIt from 'markdown-it';
+
+const md = new MarkdownIt({
+  html: true,
+  linkify: true,
+  typographer: true
+});
 
 const isOpen = ref(false);
 const userInput = ref('');
 const isLoading = ref(false);
+const isStreaming = ref(false);
 const messages = ref([
   { role: 'assistant', content: '你好！我是主人的 AI 助手，有什么可以帮你的吗？' }
 ]);
 const messageContainer = ref(null);
+
+const renderMarkdown = (content) => {
+  return md.render(content);
+};
 
 const toggleChat = () => {
   isOpen.value = !isOpen.value;
@@ -71,6 +83,7 @@ const sendMessage = async () => {
   messages.value.push({ role: 'user', content });
   userInput.value = '';
   isLoading.value = true;
+  isStreaming.value = false;
   await scrollToBottom();
 
   try {
@@ -83,21 +96,42 @@ const sendMessage = async () => {
       body: JSON.stringify({
         model: 'deepseek-ai/deepseek-v3.2',
         messages: [
-          { role: 'system', content: '你是一个友好且专业的 AI 助手，负责在博客中回答读者的问题。' },
+          { role: 'system', content: '你是一个友好且专业的 AI 助手，负责在博客中回答读者的问题。请使用 Markdown 格式回答。' },
           ...messages.value.map(m => ({ role: m.role, content: m.content }))
         ],
-        stream: false
+        stream: true
       })
     });
 
-    const data = await response.json();
-    if (data.choices && data.choices[0]) {
-      messages.value.push({
-        role: 'assistant',
-        content: data.choices[0].message.content
-      });
-    } else {
-      throw new Error('回复解析失败');
+    if (!response.ok) throw new Error('网络请求失败');
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let assistantMsg = { role: 'assistant', content: '' };
+    messages.value.push(assistantMsg);
+    isStreaming.value = true;
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      
+      const chunk = decoder.decode(value);
+      const lines = chunk.split('\n');
+      
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          const dataStr = line.slice(6).trim();
+          if (dataStr === '[DONE]') break;
+          try {
+            const data = JSON.parse(dataStr);
+            const delta = data.choices[0].delta.content || '';
+            assistantMsg.content += delta;
+            await scrollToBottom();
+          } catch (e) {
+            // 忽略非JSON行
+          }
+        }
+      }
     }
   } catch (error) {
     console.error('Chat Error:', error);
@@ -107,6 +141,7 @@ const sendMessage = async () => {
     });
   } finally {
     isLoading.value = false;
+    isStreaming.value = false;
     await scrollToBottom();
   }
 };
@@ -135,16 +170,14 @@ const sendMessage = async () => {
   transition: all 0.3s ease;
 }
 
-.chat-button:hover {
-  transform: scale(1.1);
-}
-
 .chat-window {
   position: absolute;
   bottom: 70px;
   right: 0;
-  width: 320px;
-  height: 450px;
+  width: 350px;
+  height: 500px;
+  min-width: 280px;
+  min-height: 350px;
   background: white;
   border-radius: 12px;
   box-shadow: 0 8px 24px rgba(0,0,0,0.2);
@@ -152,6 +185,7 @@ const sendMessage = async () => {
   flex-direction: column;
   overflow: hidden;
   border: 1px solid #e5e7eb;
+  resize: both; /* 允许调整大小 */
 }
 
 .chat-header {
@@ -161,20 +195,12 @@ const sendMessage = async () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  cursor: default;
+  flex-shrink: 0;
 }
 
 .chat-title {
   font-weight: bold;
-}
-
-.clear-button {
-  background: rgba(255,255,255,0.2);
-  border: none;
-  color: white;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  cursor: pointer;
 }
 
 .chat-messages {
@@ -184,14 +210,15 @@ const sendMessage = async () => {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  background: #f9fafb;
 }
 
 .message {
-  max-width: 85%;
-  padding: 8px 12px;
+  max-width: 90%;
+  padding: 10px 14px;
   border-radius: 8px;
   font-size: 14px;
-  line-height: 1.4;
+  line-height: 1.5;
   word-wrap: break-word;
 }
 
@@ -203,41 +230,45 @@ const sendMessage = async () => {
 
 .assistant {
   align-self: flex-start;
-  background: #f3f4f6;
+  background: white;
   color: #1f2937;
+  border: 1px solid #e5e7eb;
 }
+
+.markdown-body :deep(p) { margin-bottom: 8px; }
+.markdown-body :deep(code) { background: #f3f4f6; padding: 2px 4px; border-radius: 4px; font-family: monospace; }
+.markdown-body :deep(pre) { background: #1f2937; color: white; padding: 12px; border-radius: 6px; overflow-x: auto; margin: 8px 0; }
+.markdown-body :deep(ul), .markdown-body :deep(ol) { padding-left: 20px; margin-bottom: 8px; }
 
 .chat-input-area {
   padding: 12px;
   border-top: 1px solid #e5e7eb;
   display: flex;
   gap: 8px;
+  background: white;
+  flex-shrink: 0;
 }
 
 .chat-input-area input {
   flex: 1;
-  padding: 8px;
+  padding: 8px 12px;
   border: 1px solid #e5e7eb;
-  border-radius: 4px;
+  border-radius: 20px;
   outline: none;
+  font-size: 14px;
 }
 
 .chat-input-area button {
-  padding: 8px 12px;
+  padding: 8px 16px;
   background: #3b82f6;
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 20px;
   cursor: pointer;
+  font-weight: 500;
 }
 
 .chat-input-area button:disabled {
   opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.loading {
-  font-style: italic;
-  opacity: 0.7;
 }
 </style>
