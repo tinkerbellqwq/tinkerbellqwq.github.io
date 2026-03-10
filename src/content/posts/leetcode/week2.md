@@ -130,6 +130,38 @@ class Solution {
 ### 108. 将有序数组转换为二叉搜索树 <span class="difficulty-easy">简单</span> [108](https://leetcode.cn/problems/convert-sorted-array-to-binary-search-tree/)
 - **描述**：给你一个整数数组 `nums`，其中元素已经按升序排列，请你将其转换为一棵高度平衡二叉搜索树。
 
+- **解题思路**：因为是有序的。利用分治思想，每次选取有序序列的中间元素作为当前子树的根节点，并递归地对其左侧和右侧子序列执行相同操作来分别构建左、右子树，从而确保整棵树的高度差最小且满足搜索树性质。
+
+代码：
+```java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode() {}
+ *     TreeNode(int val) { this.val = val; }
+ *     TreeNode(int val, TreeNode left, TreeNode right) {
+ *         this.val = val;
+ *         this.left = left;
+ *         this.right = right;
+ *     }
+ * }
+ */
+class Solution {
+    public TreeNode sortedArrayToBST(int[] nums) {
+        return dfs(nums, 0, nums.length);
+    }
+
+    private TreeNode dfs(int[] nums, int l, int r) {
+        if (l == r) return null;
+        int m = (l + r) >>> 1; // 取中间节点。
+        return new TreeNode(nums[m], dfs(nums, l, m), dfs(nums, m + 1, r));
+    }
+}
+```
+
 ---
 
 ## Day 9: 二叉树进阶
