@@ -7,7 +7,7 @@
     </button>
 
     <!-- Chat Window -->
-    <div v-show="isOpen" class="chat-window">
+    <div v-show="isOpen" class="chat-window" :style="windowStyle">
       <div class="chat-header">
         <div class="header-left">
           <span class="chat-title">AI 助手</span>
@@ -36,6 +36,8 @@
         />
         <button @click="sendMessage" :disabled="isLoading || !userInput.trim()">发送</button>
       </div>
+      <!-- Resize Handle -->
+      <div class="resize-handle"></div>
     </div>
   </div>
 </template>
@@ -65,9 +67,8 @@ const messageContainer = ref(null);
 const processedMessages = computed(() => {
   return messages.value.map(msg => {
     if (msg.role === 'assistant') {
-      // 过滤 [WebSearch] 或其他类似格式的思考过程
-      let cleanContent = msg.content.replace(/\\[WebSearch\\]/g, '');
-      // 也可以尝试过滤包含在特定标签里的思考内容，如果 API 返回的话
+      // 过滤 [WebSearch] 或其他类似格式的思考过程 (不区分转义)
+      let cleanContent = msg.content.replace(/\\[WebSearch\\]/g, '').replace(/\[WebSearch\]/g, '');
       return { ...msg, content: cleanContent.trim() };
     }
     return msg;
@@ -146,7 +147,7 @@ const sendMessage = async () => {
       body: JSON.stringify({
         model: currentModel.value,
         messages: [
-          { role: 'system', content: '你是一个友好且专业的 AI 助手，负责在博客中回答读者的问题。请直接回答问题，不要输出思考过程。请使用 Markdown 格式回答。' },
+          { role: 'system', content: '你是一个友好且专业的 AI 助手，负责在博客中回答读者的问题。请直接回答问题，绝对不要输出任何类似 [WebSearch] 的思考过程。请使用 Markdown 格式回答。' },
           ...messages.value.filter(m => m.content !== '记忆已清除，开启新的对话吧！').map(m => ({ role: m.role, content: m.content }))
         ],
         stream: true
@@ -224,27 +225,24 @@ const sendMessage = async () => {
   right: 0;
   width: 350px;
   height: 500px;
-  min-width: 280px;
-  min-height: 350px;
+  min-width: 300px;
+  min-height: 400px;
+  max-width: 90vw;
+  max-height: 80vh;
   background: white;
   border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.25);
   display: flex;
   flex-direction: column;
   border: 1px solid #e5e7eb;
-  /* 解决调整大小的问题：必须同时设置 overflow 且不能为 visible */
+  /* 解决调整大小的关键：必须设置 overflow 且 resize 作用于此容器 */
   overflow: hidden; 
   resize: both;
 }
 
-/* 内部内容需要自适应 resize 后的窗口 */
-.chat-window > * {
-  width: 100%;
-}
-
 .chat-header {
-  padding: 8px 16px;
-  background: #3b82f6;
+  padding: 10px 16px;
+  background: #2563eb;
   color: white;
   display: flex;
   justify-content: space-between;
@@ -256,6 +254,7 @@ const sendMessage = async () => {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  flex: 1;
 }
 
 .chat-title {
@@ -264,24 +263,35 @@ const sendMessage = async () => {
 }
 
 .model-select {
-  background: rgba(255,255,255,0.2);
-  border: 1px solid rgba(255,255,255,0.4);
-  color: white;
-  font-size: 11px;
+  background: #1d4ed8;
+  border: 1px solid rgba(255,255,255,0.3);
+  color: #ffffff;
+  font-size: 12px;
   border-radius: 4px;
-  padding: 2px 4px;
+  padding: 2px 6px;
   outline: none;
-  max-width: 180px;
+  max-width: 200px;
+  cursor: pointer;
+}
+
+.model-select option {
+  background: white;
+  color: #1f2937;
 }
 
 .clear-button {
-  background: rgba(255,255,255,0.2);
-  border: none;
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.3);
   color: white;
-  padding: 4px 8px;
-  border-radius: 4px;
+  padding: 4px 10px;
+  border-radius: 6px;
   font-size: 12px;
   cursor: pointer;
+  transition: background 0.2s;
+}
+
+.clear-button:hover {
+  background: rgba(255,255,255,0.25);
 }
 
 .chat-messages {
@@ -290,16 +300,16 @@ const sendMessage = async () => {
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  background: #f9fafb;
+  gap: 14px;
+  background: #ffffff;
 }
 
 .message {
-  max-width: 90%;
+  max-width: 85%;
   padding: 10px 14px;
-  border-radius: 8px;
+  border-radius: 12px;
   font-size: 14px;
-  line-height: 1.5;
+  line-height: 1.6;
   word-wrap: break-word;
 }
 
@@ -307,75 +317,103 @@ const sendMessage = async () => {
   align-self: flex-end;
   background: #3b82f6;
   color: white;
+  border-bottom-right-radius: 2px;
 }
 
 .assistant {
   align-self: flex-start;
-  background: white;
+  background: #f3f4f6;
   color: #1f2937;
   border: 1px solid #e5e7eb;
+  border-bottom-left-radius: 2px;
 }
 
-/* Markdown Styles Fix */
-.markdown-body :deep(p) { margin-bottom: 8px; color: inherit; }
+/* Markdown Rendering Fixes */
+.markdown-body :deep(p) { margin-bottom: 10px; }
+.markdown-body :deep(p:last-child) { margin-bottom: 0; }
 .markdown-body :deep(code) { 
   background: #fee2e2; 
   color: #991b1b; 
   padding: 2px 4px; 
   border-radius: 4px; 
-  font-family: monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 0.9em;
 }
 .markdown-body :deep(pre) { 
-  background: #1e293b; 
-  color: #f8fafc; 
-  padding: 12px; 
-  border-radius: 6px; 
+  background: #0f172a; 
+  color: #e2e8f0; 
+  padding: 14px; 
+  border-radius: 8px; 
   overflow-x: auto; 
-  margin: 10px 0; 
-  border: 1px solid #334155;
-  /* 确保长代码块不会撑破对话框 */
-  max-width: 100%;
+  margin: 12px 0; 
+  border: 1px solid #1e293b;
+  font-size: 13px;
+  line-height: 1.5;
 }
 .markdown-body :deep(pre code) { 
   background: transparent; 
-  color: #cbd5e1; 
+  color: inherit; 
   padding: 0; 
-  font-size: 13px;
-  line-height: 1.6;
 }
-.markdown-body :deep(ul), .markdown-body :deep(ol) { padding-left: 20px; margin-bottom: 8px; }
+.markdown-body :deep(ul), .markdown-body :deep(ol) { padding-left: 24px; margin-bottom: 10px; }
+.markdown-body :deep(li) { margin-bottom: 6px; }
 
 .chat-input-area {
-  padding: 12px;
+  padding: 14px;
   border-top: 1px solid #e5e7eb;
   display: flex;
-  gap: 8px;
-  background: white;
+  gap: 10px;
+  background: #ffffff;
   flex-shrink: 0;
 }
 
 .chat-input-area input {
   flex: 1;
-  padding: 8px 12px;
-  border: 1px solid #e5e7eb;
-  border-radius: 20px;
+  padding: 10px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 24px;
   outline: none;
   font-size: 14px;
+  transition: border-color 0.2s;
+}
+
+.chat-input-area input:focus {
+  border-color: #3b82f6;
 }
 
 .chat-input-area button {
-  padding: 8px 16px;
+  padding: 8px 18px;
   background: #3b82f6;
   color: white;
   border: none;
-  border-radius: 20px;
+  border-radius: 24px;
   cursor: pointer;
-  font-weight: 500;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.chat-input-area button:hover:not(:disabled) {
+  background: #2563eb;
+}
+
+.chat-input-area button:disabled {
+  opacity: 0.5;
+}
+
+/* Custom Resize Handle Area */
+.resize-handle {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 15px;
+  height: 15px;
+  cursor: nwse-resize;
+  background: linear-gradient(135deg, transparent 50%, #d1d5db 50%);
+  border-bottom-right-radius: 12px;
 }
 
 .loading {
   font-style: italic;
-  opacity: 0.7;
+  opacity: 0.6;
 }
 </style>
