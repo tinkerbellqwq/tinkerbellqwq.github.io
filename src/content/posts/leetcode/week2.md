@@ -244,6 +244,31 @@ class Solution {
 ### 236. 二叉树的最近公共祖先 <span class="difficulty-medium">中等</span> [236](https://leetcode.cn/problems/lowest-common-ancestor-of-a-binary-tree/)
 - **描述**：给定一个二叉树，找到该树中两个指定节点 `p` 和 `q` 的最近公共祖先。
 
+- **解题思路**：递归找即可。`lowestCommonAncestor`函数的返回值是什么意思？：返回值的准确含义是「最近公共祖先的候选项」。对于最外层的递归调用者来说，返回值是最近公共祖先的意思。但是，在递归过程中，返回值可能是最近公共祖先，也可能是空节点（表示子树内没找到任何有用信息）、节点 `p` 或者节点 `q`（可能成为最近公共祖先，或者用来辅助判断上面的某个节点是否为最近公共祖先）。
+
+代码：
+```java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode(int x) { val = x; }
+ * }
+ */
+class Solution {
+    public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
+        if (root == null || root == p || root == q) {
+            return root;
+        }
+        TreeNode l = lowestCommonAncestor(root.left, p, q);
+        TreeNode r = lowestCommonAncestor(root.right, p, q);
+        if (l != null && r != null) return root;
+        return l != null ? l : r;
+    }
+}
+```
 ---
 
 ## Day 10: 二叉树路径
