@@ -169,6 +169,39 @@ class Solution {
 ### 98. 验证二叉搜索树 <span class="difficulty-medium">中等</span> [98](https://leetcode.cn/problems/validate-binary-search-tree/)
 - **描述**：给你一个二叉树的根节点 `root`，判断其是否是一个有效的二叉搜索树。
 
+- **解题思路**：中序遍历，与前面的108互为反问题。确保中序遍历是一个有序的序列即可。
+
+代码：
+```java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode() {}
+ *     TreeNode(int val) { this.val = val; }
+ *     TreeNode(int val, TreeNode left, TreeNode right) {
+ *         this.val = val;
+ *         this.left = left;
+ *         this.right = right;
+ *     }
+ * }
+ */
+class Solution {
+    private long pre = Long.MIN_VALUE;
+    public boolean isValidBST(TreeNode root) {
+        if (root == null) {
+            return true;
+        }
+        if (!isValidBST(root.left)) return false;
+        if (root.val <= pre) return false; // 严格递增
+        pre = root.val;
+        return isValidBST(root.right);
+    }
+}
+```
+
 ### 230. 二叉搜索树中第K小的元素 <span class="difficulty-medium">中等</span> [230](https://leetcode.cn/problems/kth-smallest-element-in-a-bst/)
 - **描述**：给定一个二叉搜索树的根节点 `root`，和一个整数 `k`，请你设计一个算法查找其中第 `k` 小的元素（从 1 开始计数）。
 
