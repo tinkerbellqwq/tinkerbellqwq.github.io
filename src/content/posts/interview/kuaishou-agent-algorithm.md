@@ -1,6 +1,4 @@
 ---
-
-> 💡 **提示**：以下内容包含详细的参考答案，点击对应的“查看答案”即可展开阅读。
 title: "快手 Agent 算法实习一面面经"
 published: 2026-03-08
 description: "快手 Agent 算法实习面试记录，涵盖 MCP 协议、Prefix Caching 及大模型底层原理"
