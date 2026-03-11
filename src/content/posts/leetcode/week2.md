@@ -190,7 +190,7 @@ class Solution {
  */
 class Solution {
     private long pre = Long.MIN_VALUE;
-    public boolean isValidBST(TreeNode root) {
+    public boolean isValidBST(TreeNode root) { // 中序遍历
         if (root == null) {
             return true;
         }
@@ -204,6 +204,42 @@ class Solution {
 
 ### 230. 二叉搜索树中第K小的元素 <span class="difficulty-medium">中等</span> [230](https://leetcode.cn/problems/kth-smallest-element-in-a-bst/)
 - **描述**：给定一个二叉搜索树的根节点 `root`，和一个整数 `k`，请你设计一个算法查找其中第 `k` 小的元素（从 1 开始计数）。
+
+- **解题思路**：用二叉搜索树中序遍历就是一个有序的递增序列。所有用中序遍历，然后记录当前是第几个就行。
+
+代码：
+```java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode() {}
+ *     TreeNode(int val) { this.val = val; }
+ *     TreeNode(int val, TreeNode left, TreeNode right) {
+ *         this.val = val;
+ *         this.left = left;
+ *         this.right = right;
+ *     }
+ * }
+ */
+class Solution {
+    private int ans; // 记录答案
+    private int k;
+    public int kthSmallest(TreeNode root, int k) {
+        this.k = k;
+        dfs(root);
+        return ans;
+    }
+    private void dfs(TreeNode node) { // 中序遍历
+        if (node == null || k <= 0) return ;
+        dfs(node.left);
+        if (-- k == 0) ans = node.val; // 到了第k个了，记录答案
+        dfs(node.right);
+    }
+}
+```
 
 ### 236. 二叉树的最近公共祖先 <span class="difficulty-medium">中等</span> [236](https://leetcode.cn/problems/lowest-common-ancestor-of-a-binary-tree/)
 - **描述**：给定一个二叉树，找到该树中两个指定节点 `p` 和 `q` 的最近公共祖先。
