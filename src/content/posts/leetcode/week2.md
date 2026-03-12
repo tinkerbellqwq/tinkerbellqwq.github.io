@@ -395,6 +395,60 @@ class Solution {
 ### 124. 二叉树中的最大路径和 <span class="difficulty-hard">困难</span> [124](https://leetcode.cn/problems/binary-tree-maximum-path-sum/)
 - **描述**：二叉树中的路径被定义为一条节点序列，序列中每对相邻节点之间都存在一条边。同一个节点在一条路径序列中至多出现一次。该路径至少包含一个节点，且不一定经过根节点。路径和是路径中各节点值的总和。给你一个二叉树的根节点 `root`，返回其最大路径和。
 
+- **思路**：题目答案可能来自：在某个节点考虑 1）以该节点为“最高点”的最大路径和（可能经过左右子树）2）以该节点为“起点向下”的最大贡献值，返回给父节点。所以我们用`dfs`计算从当前节点出发，向下走得到的最大值（只能走一边）
+
+代码：
+```java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode() {}
+ *     TreeNode(int val) { this.val = val; }
+ *     TreeNode(int val, TreeNode left, TreeNode right) {
+ *         this.val = val;
+ *         this.left = left;
+ *         this.right = right;
+ *     }
+ * }
+ */
+class Solution {
+    // 全局变量，记录目前为止的最大路径和
+    // 初始化为最小值，保证任何路径都能更新它
+    private int ans = Integer.MIN_VALUE;
+    
+    public int maxPathSum(TreeNode root) {
+        dfs(root);
+        return ans;    
+    }
+
+    /**
+     * 返回值含义：
+     * 从当前节点出发，向下走一条路径（只能选左或右）得到的最大贡献值
+     * 如果贡献值为负，返回 0，表示不选这条路径
+     */
+    private int dfs(TreeNode node) {
+        // 空节点贡献为 0
+        if (node == null) return 0;
+
+        // 左子树最大贡献（向下）
+        int l = dfs(node.left);
+        // 右子树最大贡献（向下）
+        int r = dfs(node.right);
+
+        // 以当前节点为“拐点”的路径最大和 = 左贡献 + 右贡献 + 当前节点值
+        // 这是可能的全局最大路径，更新 ans
+        ans = Math.max(ans, l + r + node.val);
+
+        // 返回给父节点的贡献值：只能选一边（不能同时选左右）
+        // 如果为负，返回 0 表示不选该路径
+        return Math.max(Math.max(l, r) + node.val, 0);
+    }
+}
+```
+
 ---
 
 ## Day 11: 递归与回溯
