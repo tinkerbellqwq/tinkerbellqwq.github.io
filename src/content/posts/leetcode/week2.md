@@ -276,6 +276,34 @@ class Solution {
 ### 112. 路径总和 <span class="difficulty-easy">简单</span> [112](https://leetcode.cn/problems/path-sum/)
 - **描述**：给你二叉树的根节点 `root` 和一个表示目标和的整数 `targetSum`。判断该树中是否存在根节点到叶子节点的路径，这条路径上所有节点值相加等于目标和 `targetSum`。
 
+- **解题思路**：一直递归下去就好，判断到了叶子节点是否满足就好了。
+
+代码：
+```java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode() {}
+ *     TreeNode(int val) { this.val = val; }
+ *     TreeNode(int val, TreeNode left, TreeNode right) {
+ *         this.val = val;
+ *         this.left = left;
+ *         this.right = right;
+ *     }
+ * }
+ */
+class Solution {
+    public boolean hasPathSum(TreeNode root, int targetSum) {
+        if (root == null) return false; // 走到空或者一开始是空，不满足
+        if (root.left == null && root.right == null) return targetSum == root.val; // 到了叶子节点，且满足条件返回真
+        return hasPathSum(root.left, targetSum - root.val) || hasPathSum(root.right, targetSum - root.val); // 分别递归左右子树。
+    }
+}
+```
+
 ### 113. 路径总和 II <span class="difficulty-medium">中等</span> [113](https://leetcode.cn/problems/path-sum-ii/)
 - **描述**：给你二叉树的根节点 `root` 和一个整数目标和 `targetSum`，找出所有从根节点到叶子节点路径总和等于给定目标和的路径。
 
