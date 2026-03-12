@@ -307,6 +307,49 @@ class Solution {
 ### 113. 路径总和 II <span class="difficulty-medium">中等</span> [113](https://leetcode.cn/problems/path-sum-ii/)
 - **描述**：给你二叉树的根节点 `root` 和一个整数目标和 `targetSum`，找出所有从根节点到叶子节点路径总和等于给定目标和的路径。
 
+- **解题思路**：相比较于上题，加一个记录当前路径的`List`，注意回溯的时候要移除对应节点。
+
+代码：
+```java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode() {}
+ *     TreeNode(int val) { this.val = val; }
+ *     TreeNode(int val, TreeNode left, TreeNode right) {
+ *         this.val = val;
+ *         this.left = left;
+ *         this.right = right;
+ *     }
+ * }
+ */
+class Solution {
+    public List<List<Integer>> pathSum(TreeNode root, int targetSum) {
+        List<List<Integer>> ans = new ArrayList<>(); // 答案
+        List<Integer> cur = new ArrayList<>(); // 当前路径
+        dfs(root, targetSum, cur, ans); // 递归找
+        return ans;
+    }
+
+    private void dfs(TreeNode node, int s, List<Integer> cur, List<List<Integer>> ans) {
+        if (node == null) return ; // 空节点直接返回
+        s -= node.val; // 处理当前节点
+        cur.add(node.val); // 加入路径中
+        if (node.left == null && node.right == null && s == 0) {
+            ans.add(new ArrayList<>(cur)); // 满足条件， 另外只能是 new ArrayLis<>(cur) 不能直接 add(cur)
+        } else {
+            dfs(node.left, s, cur, ans); // 分别递归
+            dfs(node.right, s, cur, ans);
+        }
+        cur.remove(cur.size() - 1); // 记得要移除当前节点避免污染路径
+
+    }
+}
+```
+
 ### 437. 路径总和 III <span class="difficulty-medium">中等</span> [437](https://leetcode.cn/problems/path-sum-iii/)
 - **描述**：给定一个二叉树的根节点 `root`，和一个整数 `targetSum`，求该二叉树里节点值之和等于 `targetSum` 的路径的数目。路径不需要从根节点开始，也不需要在叶子节点结束，但路径方向必须是向下的（只能从父节点到子节点）。
 
