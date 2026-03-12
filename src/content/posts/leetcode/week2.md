@@ -353,6 +353,45 @@ class Solution {
 ### 437. 路径总和 III <span class="difficulty-medium">中等</span> [437](https://leetcode.cn/problems/path-sum-iii/)
 - **描述**：给定一个二叉树的根节点 `root`，和一个整数 `targetSum`，求该二叉树里节点值之和等于 `targetSum` 的路径的数目。路径不需要从根节点开始，也不需要在叶子节点结束，但路径方向必须是向下的（只能从父节点到子节点）。
 
+- **解题思路**：树上的`和为k的子数组`，同样的我们用一个`map`记录从根节点到某个节点的前缀和，每次只需要用当前值`cur`在`map`中找`map[cur - targetSum]`的数量即可。其中`map`的`key`是从根节点到某个节点的值，`value`是出现的次数。
+
+代码：
+```java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode() {}
+ *     TreeNode(int val) { this.val = val; }
+ *     TreeNode(int val, TreeNode left, TreeNode right) {
+ *         this.val = val;
+ *         this.left = left;
+ *         this.right = right;
+ *     }
+ * }
+ */
+class Solution {
+    public int pathSum(TreeNode root, int targetSum) {
+        Map<Long, Integer> cnt = new HashMap<>(); // 前缀和
+        cnt.put(0L, 1);
+        return dfs(root, 0, targetSum, cnt);
+    }
+
+    private int dfs(TreeNode node, long s, int targetSum, Map<Long, Integer> cnt) {
+        if (node == null) return 0;
+        s += node.val;
+        int res = cnt.getOrDefault(s - targetSum, 0); // s - need = targetSum -> need = s - targetSum
+        cnt.merge(s, 1, Integer::sum); // cnt[s] ++;
+        res += dfs(node.left, s, targetSum, cnt); // 记录左右子树的答案
+        res += dfs(node.right, s, targetSum, cnt);
+        cnt.merge(s, -1, Integer::sum); // cnt[s] --;
+        return res;
+    }
+}
+```
+
 ### 124. 二叉树中的最大路径和 <span class="difficulty-hard">困难</span> [124](https://leetcode.cn/problems/binary-tree-maximum-path-sum/)
 - **描述**：二叉树中的路径被定义为一条节点序列，序列中每对相邻节点之间都存在一条边。同一个节点在一条路径序列中至多出现一次。该路径至少包含一个节点，且不一定经过根节点。路径和是路径中各节点值的总和。给你一个二叉树的根节点 `root`，返回其最大路径和。
 
