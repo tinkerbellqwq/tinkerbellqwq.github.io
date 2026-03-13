@@ -534,6 +534,38 @@ class Solution {
 ### 46. 全排列 <span class="difficulty-medium">中等</span> [46](https://leetcode.cn/problems/permutations/)
 - **描述**：给定一个不含重复数字的数组 `nums`，返回其所有可能的全排列。你可以按任意顺序返回答案。
 
+- **思路**：一样的，加一个标记数组来确保不能选已经选过了的
+
+代码：
+```java
+class Solution {
+    public List<List<Integer>> permute(int[] nums) {
+        List<List<Integer>> ans = new ArrayList<>();
+        List<Integer> cur = new ArrayList<>();
+        int n = nums.length;
+        int[] st = new int[n]; // 标记有没有选过
+        dfs(0, nums, st, cur, ans);
+        return ans;
+    }
+    private void dfs(int i, int[] nums, int[] st, List<Integer> cur, List<List<Integer>> ans) {
+        int n = nums.length;
+        if (i == n) {
+            ans.add(new ArrayList<>(cur));
+            return;
+        }
+        for (int j = 0; j < n; j ++) {
+            if (st[j] == 0) { // 没有被选过
+                cur.add(nums[j]);
+                st[j] = 1;
+                dfs(i + 1, nums, st, cur, ans);
+                st[j] = 0; // 回溯恢复状态
+                cur.removeLast();
+            }
+        }
+    }
+}
+```
+
 ### 77. 组合 <span class="difficulty-medium">中等</span> [77](https://leetcode.cn/problems/combinations/)
 - **描述**：给定两个整数 `n` 和 `k`，返回范围 `[1, n]` 中所有可能的 `k` 个数的组合。
 
