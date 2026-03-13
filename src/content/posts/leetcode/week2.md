@@ -488,6 +488,49 @@ class Solution {
 ### 78. 子集 <span class="difficulty-medium">中等</span> [78](https://leetcode.cn/problems/subsets/)
 - **描述**：给你一个整数数组 `nums`，数组中的元素互不相同。返回该数组所有可能的子集（幂集）。解集不能包含重复的子集。
 
+- **解题思路**：一样的每个位置都有和不选两个选项。递归或者二进制枚举都行。
+
+代码：
+```java
+// 二进制枚举
+class Solution {
+    public List<List<Integer>> subsets(int[] nums) {
+        List<List<Integer>> ans = new ArrayList<>();
+        int n = nums.length;
+        for (int i = 0; i < (1 << n); i ++) { // 用二进制的0和1表示选与不选 
+            List<Integer> cur = new ArrayList<>();
+            for (int j = 0; j < n; j ++) {
+                if ((i >> j & 1) == 1) { // 如果选加入
+                    cur.add(nums[j]);
+                }
+            }
+            ans.add(new ArrayList<>(cur)); // 答案
+        }
+        return ans;
+    }
+}
+// 递归
+class Solution {
+    public List<List<Integer>> subsets(int[] nums) {
+        List<List<Integer>> ans = new ArrayList<>();
+        List<Integer> cur = new ArrayList<>();
+        dfs(0, nums, cur, ans);
+        return ans;
+    }
+
+    private void dfs(int i, int[] nums, List<Integer> cur, List<List<Integer>> ans) {
+        if (i == nums.length) {
+            ans.add(new ArrayList<>(cur));
+            return ;
+        }
+        dfs(i + 1, nums, cur, ans); // 不选
+        cur.add(nums[i]);
+        dfs(i + 1, nums, cur, ans); // 选
+        cur.removeLast(); // remove(cur.size() - 1); 记得移除
+    }
+}
+```
+
 ### 46. 全排列 <span class="difficulty-medium">中等</span> [46](https://leetcode.cn/problems/permutations/)
 - **描述**：给定一个不含重复数字的数组 `nums`，返回其所有可能的全排列。你可以按任意顺序返回答案。
 
