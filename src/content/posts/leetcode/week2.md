@@ -456,6 +456,35 @@ class Solution {
 ### 22. 括号生成 <span class="difficulty-medium">中等</span> [22](https://leetcode.cn/problems/generate-parentheses/)
 - **描述**：数字 `n` 代表生成括号的对数，请你设计一个函数，用于能够生成所有可能的并且有效的括号组合。
 
+- **解题思路**：选与不选的问题。对于当前位置，是放左括号还是右括号。需要满足当前条件，我们一共有`n`个左括号和右括号，左括号方式没有限制的，想放就放，但是右括号要放必须要满足当前左括号的数量是大于右括号的。
+
+代码：
+```java
+class Solution {
+    public List<String> generateParenthesis(int n) {
+        List<String> ans = new ArrayList<>();
+        char[] cur = new char[n * 2];
+        dfs(0, 0, n, cur, ans);
+        return ans;
+    }
+
+    private void dfs(int l, int r, int n, char[] cur, List<String> ans) {
+        if (r == n) {
+            ans.add(new String(cur));
+            return;
+        }
+        if (l < n) {
+            cur[l + r] = '(';
+            dfs(l + 1, r, n, cur, ans);
+        } 
+        if (l > r) {
+            cur[l + r] = ')';
+            dfs(l, r + 1, n, cur, ans);
+        }
+    }
+}
+```
+
 ### 78. 子集 <span class="difficulty-medium">中等</span> [78](https://leetcode.cn/problems/subsets/)
 - **描述**：给你一个整数数组 `nums`，数组中的元素互不相同。返回该数组所有可能的子集（幂集）。解集不能包含重复的子集。
 
