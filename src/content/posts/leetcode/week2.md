@@ -600,11 +600,121 @@ class Solution {
 ### 450. 删除二叉搜索树中的节点 <span class="difficulty-medium">中等</span> [450](https://leetcode.cn/problems/delete-node-in-a-bst/)
 - **描述**：给定一个二叉搜索树的根节点 root 和一个值 key，删除二叉搜索树中的 key 对应的节点，并保证二叉搜索树的性质不变。
 
+- **思路**：找很容易找，关键是删，删分以下几种情况
+    - 左右节点都为空，直接删除即可。
+    - 左节点为空，把右节点填充上来
+    - 右节点为空，把左节点填充上来
+    - 左右节点都不为空，把当前节点与右子树最左边的节点交换，然后删除右子树最左边的节点即可。具体看代码操作
+
+```java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode() {}
+ *     TreeNode(int val) { this.val = val; }
+ *     TreeNode(int val, TreeNode left, TreeNode right) {
+ *         this.val = val;
+ *         this.left = left;
+ *         this.right = right;
+ *     }
+ * }
+ */
+class Solution {
+    public TreeNode deleteNode(TreeNode root, int key) {
+        root = delete(root, key);
+        return root;
+    }
+    // 删除root为根节点的BST中key节点的值，返回root
+    private TreeNode delete(TreeNode root, int key) {
+        if (root == null) return root;
+        if (root.val > key) {
+            root.left = delete(root.left, key);
+        } else if (root.val < key) {
+            root.right = delete(root.right, key);
+        } else { // 找到了
+            if (root.left == null) return root.right; // 右节点补充上来
+            if (root.right == null) return root.left; // 左节点补充上来
+            TreeNode tmp = root.right; // 找到右子树最左边的节点
+            while (tmp.left != null) {
+                tmp = tmp.left;
+            }
+            root.val = tmp.val; // 这个节点是右子树最小的，故可以交换上来。注意这里只是把值赋值过来了。
+            root.right = delete(root.right, tmp.val); // 我们接着去右子树删除这个节点就好了。
+        }
+        return root;
+    }
+}
+```
+
 ### 701. 二叉搜索树中的插入操作 <span class="difficulty-medium">中等</span> [701](https://leetcode.cn/problems/insert-into-a-binary-search-tree/)
 - **描述**：给定二叉搜索树（BST）的根节点和要插入树中的值，将值插入二叉搜索树。返回插入后二叉搜索树的根节点。
 
+- **思路**：插入操作只会发生在叶子节点
+
+代码：
+
+```java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode() {}
+ *     TreeNode(int val) { this.val = val; }
+ *     TreeNode(int val, TreeNode left, TreeNode right) {
+ *         this.val = val;
+ *         this.left = left;
+ *         this.right = right;
+ *     }
+ * }
+ */
+class Solution {
+    public TreeNode insertIntoBST(TreeNode root, int val) {
+        if (root == null) {
+            return new TreeNode(val);
+        }
+        if (root.val < val) root.right =  insertIntoBST(root.right, val);
+        else if(root.val > val) root.left = insertIntoBST(root.left, val);
+        return root;
+    }
+}
+```
+
 ### 700. 二叉搜索树中的搜索 <span class="difficulty-easy">简单</span> [700](https://leetcode.cn/problems/search-in-a-binary-search-tree/)
 - **描述**：给定二叉搜索树（BST）的根节点和一个值。你需要在 BST 中找到节点值等于给定值的节点。返回以该节点为根的子树。如果节点不存在，则返回 NULL。
+
+- **思路**：根据BST特点找
+
+代码：
+```java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode() {}
+ *     TreeNode(int val) { this.val = val; }
+ *     TreeNode(int val, TreeNode left, TreeNode right) {
+ *         this.val = val;
+ *         this.left = left;
+ *         this.right = right;
+ *     }
+ * }
+ */
+class Solution {
+    public TreeNode searchBST(TreeNode root, int val) {
+        if (root == null) return null;
+        if (root.val == val) return root;
+        if (root.val > val) return searchBST(root.left, val);
+        else return searchBST(root.right, val);
+    }
+}
+```
 
 ---
 
