@@ -569,6 +569,30 @@ class Solution {
 ### 77. 组合 <span class="difficulty-medium">中等</span> [77](https://leetcode.cn/problems/combinations/)
 - **描述**：给定两个整数 `n` 和 `k`，返回范围 `[1, n]` 中所有可能的 `k` 个数的组合。
 
+- **思路**：和上面的`78 子集`思路差不多，加了一个`k`限制
+
+代码：
+```java
+class Solution {
+    public List<List<Integer>> combine(int n, int k) {
+        List<List<Integer>> ans = new ArrayList<>();
+        List<Integer> cur = new ArrayList<>();
+        dfs(0, n, k, cur, ans);
+        return ans;
+    }
+    private void dfs(int i, int n, int k, List<Integer> cur, List<List<Integer>> ans) {
+        if (cur.size() == k) {
+            ans.add(new ArrayList<>(cur));
+            return ;
+        }
+        if (i == n) return; // 注意别缺少递归终止条件
+        dfs(i + 1, n, k, cur, ans); // 不选
+        cur.add(i + 1); // 选
+        dfs(i + 1, n, k, cur, ans);
+        cur.removeLast(); // 回溯
+    }
+}
+```
 ---
 
 ## Day 12: 二叉搜索树
