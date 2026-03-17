@@ -138,11 +138,102 @@ class Solution {
 ### 198. 打家劫舍 <span class="difficulty-medium">中等</span> [198](https://leetcode.cn/problems/house-robber/)
 - **描述**：你是一个专业的小偷，计划偷窃沿街的房屋。每间房内都藏有一定的现金，影响你偷窃的唯一制约因素就是相邻的房屋装有相互连通的防盗系统。**如果两间相邻的房屋在同一晚上被小偷闯入，系统会自动报警**。给定一个代表每个房屋存放金额的非负整数数组，计算你不触动警报装置的情况下，一夜之内能够偷窃到的最高金额。
 
+- **解题思路**：第`i`家能不能偷要看有没有偷`i-1`家。用`f[i]`表示前`i`家能偷到的最大现金，不难得到递推式：`f[i] = max(f[i - 1], f[i - 2] + nums[i])`。
+
+代码：
+```java
+class Solution {
+    public int rob(int[] nums) {
+        int n = nums.length;
+        int[] f = new int[n];
+        f[0] = nums[0];
+        if (n < 2) return f[0];
+        f[1] = Math.max(nums[0], nums[1]);
+        for (int i = 2; i < n; i ++) {
+            f[i] = Math.max(f[i - 1], f[i - 2] + nums[i]);
+        }
+        return f[n - 1];
+    }
+}
+// 不用数组版本。本质上就变了两个变量维护即可
+private int rob1(int[] nums, int l, int r) {
+        int f0 = 0;
+        int f1 = 0;
+        for (int i = l; i < r; i ++) {
+            int newF = Math.max(f1, f0 + nums[i]);
+            f0 = f1;
+            f1 = newF;
+        }
+        return f1;
+    }
+```
+
 ### 213. 打家劫舍 II <span class="difficulty-medium">中等</span> [213](https://leetcode.cn/problems/house-robber-ii/)
 - **描述**：房屋围成一圈，第一间和最后一间相邻。
 
+- **思路**：环意味着首位相连了，考虑选了`nums[0]`，这样我们就不可以选`nums[1]`和`nums[n - 1]`，不选则可以。故根据选不选`nums[0]`将问题退化为上一问。
+
+代码：
+```java
+class Solution {
+    public int rob(int[] nums) {
+        int n = nums.length; 
+        return Math.max(rob1(nums, 2, n - 1) + nums[0], rob1(nums, 1, n));
+    }
+    // 在[l, r) 左闭右开区间做打家劫舍Ⅰ
+    private int rob1(int[] nums, int l, int r) {
+        int f0 = 0;
+        int f1 = 0;
+        for (int i = l; i < r; i ++) {
+            int newF = Math.max(f1, f0 + nums[i]);
+            f0 = f1;
+            f1 = newF;
+        }
+        return f1;
+    }
+}
+```
+
 ### 337. 打家劫舍 III <span class="difficulty-medium">中等</span> [337](https://leetcode.cn/problems/house-robber-iii/)
 - **描述**：房屋排成二叉树结构，直接相连的房屋不能同时被偷。
+
+- **解题思路**：对于当前节点，有选和不选的两种选择，选了就不能选左子树和右子树的根节点，不选则左右子树的根节点都可以选或者不选。依照这个思路，参照上面选与不选的问题，维护选或者不选节点的最大值。最后答案就是选或者不选`root`节点的最大值
+
+代码：
+```java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode() {}
+ *     TreeNode(int val) { this.val = val; }
+ *     TreeNode(int val, TreeNode left, TreeNode right) {
+ *         this.val = val;
+ *         this.left = left;
+ *         this.right = right;
+ *     }
+ * }
+ */
+class Solution {
+    public int rob(TreeNode root) {
+        int[] res = dfs(root);
+        return Math.max(res[0], res[1]);
+    }
+    // 返回选node的最大值和不选node的最大值
+    private int[] dfs(TreeNode node) {
+        if (node == null) {
+            return new int[]{0, 0};
+        }
+        int[] l = dfs(node.left);
+        int[] r = dfs(node.right);
+        int rob = l[1] + r[1] + node.val;
+        int norob = Math.max(l[0], l[1]) + Math.max(r[0], r[1]);
+        return new int[]{rob, norob};
+    }
+}
+```
 
 ---
 
