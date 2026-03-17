@@ -17,14 +17,119 @@ draft: false
 ### 70. 爬楼梯 <span class="difficulty-easy">简单</span> [70](https://leetcode.cn/problems/climbing-stairs/)
 - **描述**：假设你正在爬楼梯。需要 n 阶你才能到达楼顶。每次你可以爬 1 或 2 个台阶。你有多少种不同的方法可以爬到楼顶呢？
 
+- **思路**：`f[n]`表示爬`n`阶的方法。不难得出：`f[i] = f[i - 1] + f[i - 2]`
+
+代码：
+```java
+class Solution {
+    public int climbStairs(int n) {
+        int[] f = new int[n + 1];
+        f[0] = f[1] = 1;
+        for (int i = 2; i <= n; i ++) {
+            f[i] = f[i - 1] + f[i - 2];
+        }
+        return f[n];
+    }
+}
+```
+
 ### 322. 零钱兑换 <span class="difficulty-medium">中等</span> [322](https://leetcode.cn/problems/coin-change/)
 - **描述**：给你一个整数数组 `coins`，表示不同面额的硬币；以及一个整数 `amount`，表示总金额。计算并返回可以凑成总金额所需的**最少的硬币个数**。如果没有任何一种硬币组合能组成总金额，返回 -1。
+
+- **思路**：完全背包模型。[背包九讲模板博客](https://blog.csdn.net/ecjtu2020/article/details/121809362)
+
+```java
+class Solution {
+    public int coinChange(int[] coins, int amount) {
+        int[] f = new int[amount + 1];
+        Arrays.fill(f, 1000000000);
+        f[0] = 0;
+        for (int x : coins) {
+            for (int i = x; i <= amount; i ++) {
+                f[i] = Math.min(f[i], f[i - x] + 1);
+            }
+        }
+        return f[amount] == 1000000000 ? -1 : f[amount];
+    }
+}
+```
 
 ### 300. 最长递增子序列 <span class="difficulty-medium">中等</span> [300](https://leetcode.cn/problems/longest-increasing-subsequence/)
 - **描述**：给你一个整数数组 `nums`，找到其中最长严格递增子序列的长度。子序列是由数组派生而来的序列，删除（或不删除）数组中的元素而不改变其余元素的顺序。
 
+- **解题思路**：LCS模板。[LIS和LCS](https://blog.csdn.net/ecjtu2020/article/details/121788781)
+
+代码：
+```java
+class Solution {
+    public int lengthOfLIS(int[] nums) {
+        int n = nums.length;
+        int[] f = new int[n]; // f[i] 表示以 a[i] 结尾的LCS
+        int ans = 0;
+        for (int i = 0; i < n;i ++) {
+            f[i] = 1;
+            for (int j = 0; j < i; j ++) {
+                if (nums[i] > nums[j]) {
+                    f[i] = Math.max(f[i], f[j] + 1);
+                }
+            }
+            ans = Math.max(ans, f[i]);
+        }
+        return ans;
+    }
+}
+// nlogn 优化版本
+class Solution {
+    public int lengthOfLIS(int[] nums) {
+        int n = nums.length;
+        int[] f = new int[n];
+        Arrays.fill(f, 0x3f3f3f3f);
+        for (int i = 0; i < n; i ++) {
+            int x = nums[i];
+            int pos = lowerBound(f, x);
+            f[pos] = x;
+        }
+        int ans = 0;
+        while (ans < n && f[ans] != 0x3f3f3f3f) ans ++;
+        return ans;
+    }
+    private int lowerBound(int[] a, int x) {
+        int l = 0, r = a.length - 1;
+        while (l < r) {
+            int mid = (l + r) >> 1;
+            if (a[mid] >= x) r = mid;
+            else l = mid + 1;
+        }
+        return l;
+    }
+}
+```
+
 ### 139. 单词拆分 <span class="difficulty-medium">中等</span> [139](https://leetcode.cn/problems/word-break/)
 - **描述**：给你一个字符串 `s` 和一个字符串列表 `wordDict` 作为字典。请你判断是否可以利用字典中出现的单词拼接出 `s`。
+
+- **思路**：同样的定义`f[i]`表示`1 - i`这个字符串能否被拼接出来。对于字符串判断可以用`Set`
+
+代码：
+```java
+class Solution {
+    public boolean wordBreak(String s, List<String> wordDict) {
+        Set<String> words = new HashSet<>(wordDict);
+        int n = s.length();
+        boolean[] f = new boolean[n + 1];
+        f[0] = true;
+        for (int i = 1; i <= n; i ++) {
+            for (int j = i - 1; j >= Math.max(i - n, 0); j --) {
+                if (f[j] && words.contains(s.substring(j, i))) {
+                    f[i] = true;
+                    break;
+                }
+            }
+        }
+        return f[n];
+    }
+}
+```
 
 ---
 
