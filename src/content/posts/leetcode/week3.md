@@ -242,15 +242,128 @@ class Solution {
 ### 416. 分割等和子集 <span class="difficulty-medium">中等</span> [416](https://leetcode.cn/problems/partition-equal-subset-sum/)
 - **描述**：给你一个只包含正整数的非空数组 `nums`。请你判断是否可以将这个数组分割成两个子集，使得两个子集的元素和相等。
 
+- **思路**：先看一下元素和是不是偶数（能不能分为两半），然后用一半为容量做01背包判断就好了。
+
+代码：
+```java
+class Solution {
+    public boolean canPartition(int[] nums) {
+        int all = 0;
+        for (int x : nums) all += x;
+        if (all % 2 != 0) return false;
+        all /= 2;
+        boolean[] f = new boolean[all + 1];
+        f[0] = true;
+        for (int x : nums) {
+            for (int i = all; i >= x; i --) {
+                if (f[i - x]) {
+                    f[i] = true;
+                }
+            }
+        }
+        return f[all];
+    }
+}
+```
+
 ### 494. 目标和 <span class="difficulty-medium">中等</span> [494](https://leetcode.cn/problems/target-sum/)
 - **描述**：给你一个整数数组 `nums` 和一个整数 `target`。向数组中的每个整数前添加 '+' 或 '-'，然后串联起所有整数，可以构造一个表达式。返回可以通过上述方法构造的、运算结果等于 `target` 的不同表达式的数目。
+
+- **思路**：设`S`是`nums`的总和，其中有`p`个+，`q`个-。不难得到`p + q = S`（这里先不加符号只看绝对值）和`p - q = target`，可以推出：`p = \frac{S + target}{2}` 和 `q = \frac{S - target}{2}`。所以问题变成从数组中选一些数的和等于`p`或者`q`，为了方便我们尽量选小的
+    - 当`target \ge 0`时，`q \le p`，选 `q = q = \frac{S - target}{2}`
+    - 当`target < 0 `时，`p < q`，选`p = \frac{S + target}{2}`等价于`p = \frac{S - |target|}{2}`
+综上所述，选`p = \frac{S - |target|}{2}`
+
+接下来方法很多，可以用背包，也可以用二进制枚举。当数组中数值过大时候，背包会失效。可以考虑把数组对半拆开，从左边选`x`右边选`y`，使其`x + y = p`。这里和两数之和是差不多的。先用二进制枚举出所有的情况。
+
+代码：
+```java
+class Solution {
+    public int findTargetSumWays(int[] nums, int target) {
+        int s = 0;
+        for (int x : nums) s += x;
+        s -= Math.abs(target);
+        if (s < 0 || s % 2 == 1) return 0;
+        int m = s / 2;
+        int k = nums.length / 2; // 对半拆开
+        Map<Integer, Integer> c1 = subsets(Arrays.copyOfRange(nums, 0, k));
+        Map<Integer, Integer> c2 = subsets(Arrays.copyOfRange(nums, k, nums.length));
+        int ans = 0;
+        for (var e : c1.entrySet()) {
+            int x = e.getKey(); // x
+            int cnt = e.getValue();
+            ans += cnt * c2.getOrDefault(m - x, 0); // 乘法原则
+        }
+        return ans;
+    }
+    // 枚举所有的集合
+    private Map<Integer, Integer> subsets(int[] a) {
+        int n = a.length;
+        Map<Integer, Integer> cnt = new HashMap<>();
+        for (int i = 0; i < (1 << n); i ++) {
+            int s = 0;
+            for (int j = 0; j < n; j ++) {
+                if((i >> j & 1) == 1) {
+                    s += a[j];
+                }
+            }
+            cnt.merge(s, 1, Integer::sum);
+        }
+        return cnt;
+    }
+}
+```
 
 ### 474. 一和零 <span class="difficulty-medium">中等</span> [474](https://leetcode.cn/problems/ones-and-zeroes/)
 - **描述**：给你一个二进制字符串数组 `strs` 和两个整数 `m` 和 `n`。请你找出并返回 `strs` 的最大子集的长度，该子集中**最多**有 `m` 个 `0` 和 `n` 个 `1`。如果 `x` 的所有元素也是 `y` 的元素，集合 `x` 是集合 `y` 的子集。
 
+- **思路**：可以看成`strs`数组中有若干个字符串，其重量为0的个数和1的个数，现在有一个`(m, n)`的背包，最多能装下多少个字符串。二维的背包问题。
+
+代码：
+```java
+class Solution {
+    public int findMaxForm(String[] strs, int m, int n) {
+        int[][][] f = new int[strs.length + 1][m + 1][n + 1];
+        for (int i = 0; i < strs.length; i ++) {
+            int cnt0 = (int) strs[i].chars().filter(ch -> ch == '0').count();
+            int cnt1 = strs[i].length() - cnt0;
+            for (int j = 0; j <= m; j ++) {
+                for (int k = 0; k <= n; k ++) {
+                    if (j >= cnt0 && k >= cnt1) {
+                        f[i + 1][j][k] = Math.max(f[i][j][k], f[i][j - cnt0][k - cnt1] + 1);
+                    } else {
+                        f[i + 1][j][k] = f[i][j][k];
+                    }
+                }
+            }
+        }
+        return f[strs.length][m][n];
+    }
+}
+```
+
 ### 1049. 最后一块石头的重量 II <span class="difficulty-medium">中等</span> [1049](https://leetcode.cn/problems/last-stone-weight-ii/)
 - **描述**：有一堆石头，每块石头的重量都是正整数。每次选出两块石头，将它们一起粉碎。如果石头重量分别为 x 和 y，且 x <= y，则粉碎结果为：如果 x == y，两块石头完全粉碎；如果 x != y，重量为 x 的石头完全粉碎，重量为 y 的石头新重量为 y-x。最后，最多只会剩下一块石头。返回此石头最小的可能重量。
 
+- **思路**：分成两堆，最好是两堆一样的。可以用石子一半的容量去做01背包，得到一堆最多能装多少，用总数减去背包值是左边这堆剩下的，然后再减去右边背包值。
+
+代码：
+```java
+class Solution {
+    public int lastStoneWeightII(int[] stones) {
+        int[] f = new int [15000];
+        int s = 0;
+        for (int x : stones) s += x;
+        int m = s / 2;
+        for (int x : stones) {
+            for (int j = m; j >= x; j--) {
+                f[j] = Math.max(f[j], f[j - x] + x);
+            }
+        }
+        return (s - f[m]) - f[m];
+    }
+}
+```
 ---
 
 ## Day 18: 图论基础
