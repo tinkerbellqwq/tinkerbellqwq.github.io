@@ -371,11 +371,126 @@ class Solution {
 ### 200. 岛屿数量 <span class="difficulty-medium">中等</span> [200](https://leetcode.cn/problems/number-of-islands/)
 - **描述**：给你一个由 '1'（陆地）和 '0'（水）组成的的二维网格，请你计算网格中岛屿的数量。岛屿总是被水包围，并且每座岛屿只能由水平方向和/或竖直方向上相邻的陆地连接形成。此外，你可以假设该网格的四条边均被水包围。
 
+- **思路**：遍历整个二维网格，遇到陆地答案++，然后用`dfs`标记
+
+代码：
+```java
+class Solution {
+    public int numIslands(char[][] grid) {
+        int ans = 0;
+        for (int i = 0; i < grid.length; i ++) {
+            for (int j = 0; j < grid[i].length; j ++) {
+                if (grid[i][j] == '1') {
+                    ans ++;
+                    dfs(grid, i, j);
+                }
+            }
+        }
+        return ans;
+    }
+    private void dfs(char[][] grid, int i, int j) {
+        // 超出
+        if (i < 0 || i >= grid.length || j < 0 || j >= grid[0].length || grid[i][j] != '1') return ;
+        grid[i][j] = '2'; // 标记
+        dfs(grid, i - 1, j); // 上
+        dfs(grid, i, j + 1); // 右
+        dfs(grid, i + 1, j); // 下
+        dfs(grid, i, j - 1); // 左
+    }
+}
+```
+
 ### 207. 课程表 <span class="difficulty-medium">中等</span> [207](https://leetcode.cn/problems/course-schedule/)
 - **描述**：你总共需要修 `numCourses` 门课，课程编号从 `0` 到 `numCourses-1`。在选修某些课程之前需要一些先修课程。先修课程按数组 `prerequisites` 给出，其中 `prerequisites[i] = [ai, bi]`，表示如果要学习课程 `ai` 则必须先学习课程 `bi`。请你判断是否可能完成所有课程的学习？
 
+- **思路**：不难得到，可以根据先修课程构建一个图，判断该图是不是有向无环图。用拓扑序列即可。
+
+代码：
+```java
+class Solution {
+    List<List<Integer>> adj; // 记录图
+    int[] indeg; // 记录节点的入度
+
+    public boolean canFinish(int numCourses, int[][] prerequisites) {
+        adj = new ArrayList<>();
+        for (int i = 0; i < numCourses; i ++) {
+            adj.add(new ArrayList<Integer>());
+        }
+        indeg = new int[numCourses];
+        for (int[] f : prerequisites) {
+            adj.get(f[1]).add(f[0]);
+            indeg[f[0]] ++;
+        }
+        Queue<Integer> q = new LinkedList<Integer>();
+        for (int i = 0; i < numCourses; i ++) {
+            if (indeg[i] == 0) { // 所有入度为0的节点入队
+                q.offer(i);
+            }
+        }
+
+        int vis = 0;
+        while (!q.isEmpty()) {
+            ++ vis;
+            int u = q.poll();
+            for (int v : adj.get(u)) {
+                -- indeg[v]; // 看有没有新的0入度的节点
+                if (indeg[v] == 0) {
+                    q.offer(v);
+                }
+            }
+        }
+        
+        return vis == numCourses;
+    }
+
+}
+```
+
 ### 994. 腐烂的橘子 <span class="difficulty-medium">中等</span> [994](https://leetcode.cn/problems/rotting-oranges/)
 - **描述**：在给定的 `m x n` 网格 `grid` 中，每个单元格可以有以下三个值之一：值 0 代表空单元格；值 1 代表新鲜橘子；值 2 代表腐烂的橘子。每分钟，腐烂的橘子周围 4 个方向上相邻的新鲜橘子都会腐烂。返回直到单元格中没有新鲜橘子为止所必须经过的最小分钟数。如果不可能，返回 -1。
+
+- **思路**：把2放到队列，然后bfs。
+
+代码：
+```java
+class Solution {
+    private static final int[][] dir = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+
+    public int orangesRotting(int[][] grid) {
+        int m = grid.length;
+        int n = grid[0].length;
+        int fresh = 0; // 新鲜的个数
+        List<int[]> q  = new ArrayList<>();
+        for (int i = 0; i < m; i ++) {
+            for (int j = 0; j < n; j ++) {
+                if (grid[i][j] == 1) {
+                    fresh ++;
+                } else if (grid[i][j] == 2) {
+                    q.add(new int[]{i, j}); // 放大队列
+                }
+            }
+        }
+        int ans = 0;
+        while (fresh > 0 && !q.isEmpty()) {
+            ans ++;
+            List<int[]> tmp = q;
+            q = new ArrayList<>();
+            for (int[] pos : tmp) { // 遍历
+                for (int [] d : dir) {
+                    int i = pos[0] + d[0];
+                    int j = pos[1] + d[1]; // 感染新的
+                    if (0 <= i && i < m && 0 <= j && j < n && grid[i][j] == 1) {
+                        fresh --;
+                        grid[i][j] = 2;
+                        q.add(new int[]{i, j});
+                    }
+                }
+            }
+        }
+        return fresh > 0 ? -1 : ans;
+    }
+}
+```
 
 ---
 
